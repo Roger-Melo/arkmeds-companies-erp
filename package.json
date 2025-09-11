@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "npx cypress open"
   },
   "dependencies": {
     "@emotion/cache": "11.14.0",
@@ -16,7 +17,8 @@
     "@mui/material-nextjs": "7.3.2",
     "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.1",
