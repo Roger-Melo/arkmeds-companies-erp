@@ -1,0 +1,50 @@
+import Typography from "@mui/material/Typography";
+import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import { RendimentoDialog } from "@/components/rendimento-dialog";
+import { Companies } from "@/types";
+
+type CompaniesListProps = {
+  companies: Companies;
+};
+
+export function CompaniesList({ companies }: CompaniesListProps) {
+  return (
+    <ul data-cy="companiesList">
+      {companies.map((company) => (
+        <Box
+          component="li"
+          key={company.id}
+          sx={{ width: 275, listStyle: "none" }}
+        >
+          <Card variant="outlined">
+            <CardContent>
+              <Typography
+                gutterBottom
+                sx={{ color: "text.secondary", fontSize: 12 }}
+              >
+                {company.razao_social}
+              </Typography>
+              <Typography variant="h5" component="div">
+                {company.nome_fantasia}
+              </Typography>
+              <Typography
+                sx={{ color: "text.secondary", mb: 1.5, fontSize: 14 }}
+              >
+                {company.cnpj}
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: 12 }}>
+                {company.municipio} / {company.estado}
+              </Typography>
+            </CardContent>
+            <CardActions>
+              <RendimentoDialog data={company} />
+            </CardActions>
+          </Card>
+        </Box>
+      ))}
+    </ul>
+  );
+}
