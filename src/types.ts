@@ -22,3 +22,4 @@ export const companiesSchema = z.array(
 );
 
 export type Companies = z.infer<typeof companiesSchema>;
+export type Company = Companies[number];

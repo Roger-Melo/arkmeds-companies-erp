@@ -7,8 +7,13 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import { useState } from "react";
+import { Company } from "@/types";
 
-export function RendimentoDialog({ data }) {
+type RendimentoDialogProps = {
+  company: Company;
+};
+
+export function RendimentoDialog({ company }: RendimentoDialogProps) {
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -31,7 +36,9 @@ export function RendimentoDialog({ data }) {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{data.nome_fantasia}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">
+          {company.nome_fantasia}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             Let Google help apps determine location. This means sending

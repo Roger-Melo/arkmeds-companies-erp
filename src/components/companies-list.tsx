@@ -12,7 +12,16 @@ type CompaniesListProps = {
 
 export function CompaniesList({ companies }: CompaniesListProps) {
   return (
-    <ul data-cy="companiesList">
+    <ul
+      data-cy="companiesList"
+      style={{
+        listStyle: "none",
+        display: "flex",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        width: "1000px",
+      }}
+    >
       {companies.map((company) => (
         <Box
           component="li"
@@ -40,7 +49,7 @@ export function CompaniesList({ companies }: CompaniesListProps) {
               </Typography>
             </CardContent>
             <CardActions>
-              <RendimentoDialog data={company} />
+              <RendimentoDialog company={company} />
             </CardActions>
           </Card>
         </Box>
