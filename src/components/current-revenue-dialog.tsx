@@ -8,16 +8,20 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import { useState } from "react";
 import { Company } from "@/types";
+import { getCurrentRevenueAction } from "@/actions/get-current-revenue-action";
 
-type RendimentoDialogProps = {
+type CurrentRevenueDialogProps = {
   company: Company;
 };
 
-export function RendimentoDialog({ company }: RendimentoDialogProps) {
+export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
   const [open, setOpen] = useState(false);
+  const [currentRevenue, setCurrentRevenue] = useState<string | null>(null);
 
-  const handleClickOpen = () => {
+  const handleClickOpen = async () => {
     setOpen(true);
+    const currentRevenue = await getCurrentRevenueAction(company.cnpj);
+    setCurrentRevenue(currentRevenue);
   };
 
   const handleClose = () => {
@@ -26,11 +30,16 @@ export function RendimentoDialog({ company }: RendimentoDialogProps) {
 
   return (
     <>
-      <Button size="small" onClick={handleClickOpen}>
+      <Button
+        data-cy="revenueDialogButton"
+        size="small"
+        onClick={handleClickOpen}
+      >
         Ver rendimento atual
       </Button>
 
       <Dialog
+        data-cy="revenueDialog"
         open={open}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
@@ -41,12 +50,11 @@ export function RendimentoDialog({ company }: RendimentoDialogProps) {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending
-            anonymous location data to Google, even when no apps are running.
+            Rendimento: {currentRevenue}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} autoFocus>
+          <Button data-cy="revenueDialogClose" onClick={handleClose} autoFocus>
             Fechar
           </Button>
         </DialogActions>

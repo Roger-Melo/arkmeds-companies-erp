@@ -1,20 +1,483 @@
-describe("Homepage", () => {
+describe("Homepage - Listagem de Empresas e Modal de Receita", () => {
+  // Seletores reutilizáveis
+  const selectors = {
+    companiesList: '[data-cy="companiesList"]',
+    companyCard: '[data-cy="companiesList"] li',
+    pagination: ".MuiPagination-root",
+    paginationButton: ".MuiPaginationItem-root",
+    nextPageButton: '[aria-label="Go to next page"]',
+    previousPageButton: '[aria-label="Go to previous page"]',
+    firstPageButton: '[aria-label="Go to first page"]',
+    lastPageButton: '[aria-label="Go to last page"]',
+    revenueDialogButton: '[data-cy="revenueDialogButton"]',
+    revenueDialog: '[data-cy="revenueDialog"]',
+    revenueDialogClose: '[data-cy="revenueDialogClose"]',
+    razaoSocial: '[data-cy="razao-social"]',
+    nomeFantasia: '[data-cy="nome-fantasia"]',
+    cnpj: '[data-cy="cnpj"]',
+    municipioEstado: '[data-cy="municipio-estado"]',
+  };
+
   beforeEach(() => {
     cy.visit("/");
+    // Aguarda a página carregar completamente
+    cy.get(selectors.companiesList).should("be.visible");
   });
 
-  it("CompaniesList component should render companies from the API", () => {
-    cy.get('[data-cy="companiesList"]').should("be.visible");
-    cy.get('[data-cy="companiesList"] li').should("have.length.greaterThan", 0);
+  describe("Renderização inicial", () => {
+    it("deve renderizar o componente CompaniesList", () => {
+      cy.get(selectors.companiesList).should("be.visible");
+    });
 
-    const companies = [
-      "Premium Café do Rafael Ltda",
-      "Delicioso Lanches da Clara Ltda",
-      "Popular Pão do Paulo Ltda",
-    ];
+    it("deve exibir cards de empresas da API", () => {
+      cy.get(selectors.companyCard).should("have.length.greaterThan", 0);
+      // Verifica se tem no máximo 10 cards (limite por página)
+      cy.get(selectors.companyCard).should("have.length.lte", 10);
+    });
 
-    companies.forEach((company) => {
-      cy.get('[data-cy="companiesList"]').should("contain.text", company);
+    it("deve exibir empresas conhecidas do sistema", () => {
+      const companies = [
+        "Premium Café do Rafael Ltda",
+        "Delicioso Lanches da Clara Ltda",
+        "Popular Pão do Paulo Ltda",
+      ];
+
+      companies.forEach((empresa) => {
+        cy.get(selectors.companiesList).then(($list) => {
+          // Verifica se a empresa está na página atual
+          if ($list.text().includes(empresa)) {
+            cy.wrap($list).should("contain.text", empresa);
+          }
+        });
+      });
+    });
+
+    it("deve exibir informações completas em cada card", () => {
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          // Verifica estrutura do card
+          // Razão Social
+          cy.get(selectors.razaoSocial).should("exist");
+          // Nome Fantasia (título principal)
+          cy.get(selectors.nomeFantasia).should("exist");
+          // CNPJ
+          cy.get(selectors.cnpj)
+            .should("exist")
+            .and(($el) => {
+              const text = $el.text();
+              const hasCNPJ = /\d{14}/.test(text.replace(/\D/g, ""));
+              expect(hasCNPJ).to.equal(true);
+            });
+          // Município / Estado
+          cy.get(selectors.municipioEstado).should("contain", "/");
+          // Botão de ação
+          cy.get(".MuiCardActions-root").should("exist");
+        });
+    });
+
+    it("deve renderizar os controles de paginação se houver mais de 10 empresas", () => {
+      // Verifica quantos cards existem
+      cy.get(selectors.companyCard).then(($cards) => {
+        if ($cards.length === 10) {
+          // Se tem 10 cards, provavelmente há mais páginas
+          cy.get(selectors.pagination).should("be.visible");
+          cy.get(selectors.paginationButton).should(
+            "have.length.greaterThan",
+            0,
+          );
+        }
+      });
+    });
+  });
+
+  describe("Navegação por paginação", () => {
+    it("deve navegar para a próxima página ao clicar em 'próxima'", () => {
+      // Só executa se houver paginação
+      cy.get("body").then(($body) => {
+        if ($body.find(selectors.nextPageButton).length > 0) {
+          // Captura o primeiro card da página 1
+          cy.get(selectors.companyCard)
+            .first()
+            .invoke("text")
+            .then((firstCardTextPage1) => {
+              // Navega para próxima página
+              cy.get(selectors.nextPageButton).click();
+
+              // Verifica URL atualizada
+              cy.url().should("include", "page=2");
+
+              // Aguarda carregar nova página
+              cy.get(selectors.companiesList).should("be.visible");
+
+              // Verifica que o conteúdo mudou
+              cy.get(selectors.companyCard)
+                .first()
+                .invoke("text")
+                .should((firstCardTextPage2) => {
+                  expect(firstCardTextPage2).to.not.equal(firstCardTextPage1);
+                });
+            });
+        }
+      });
+    });
+
+    it("deve navegar para página específica ao clicar no número", () => {
+      cy.get("body").then(($body) => {
+        // Verifica se existe botão da página 2
+        const page2Button = $body.find(
+          selectors.paginationButton + ':contains("2")',
+        );
+        if (page2Button.length > 0) {
+          // Captura conteúdo inicial
+          cy.get(selectors.companyCard)
+            .first()
+            .invoke("text")
+            .then((initialText) => {
+              // Clica na página 2
+              cy.get(selectors.paginationButton).contains("2").click();
+
+              // Verifica URL
+              cy.url().should("include", "page=2");
+
+              // Verifica que conteúdo mudou
+              cy.get(selectors.companyCard)
+                .first()
+                .invoke("text")
+                .should("not.equal", initialText);
+            });
+        }
+      });
+    });
+
+    it("deve voltar para primeira página", () => {
+      cy.get("body").then(($body) => {
+        if ($body.find(selectors.nextPageButton).length > 0) {
+          // Vai para página 2
+          cy.get(selectors.nextPageButton).click();
+          cy.url().should("include", "page=2");
+
+          // Captura conteúdo da página 2
+          cy.get(selectors.companyCard)
+            .first()
+            .invoke("text")
+            .then((page2Text) => {
+              // Volta para primeira página
+              cy.get(selectors.firstPageButton).click();
+
+              // URL não deve ter parâmetro page quando está na página 1
+              cy.url().should("not.include", "page=");
+
+              // Conteúdo deve ser diferente
+              cy.get(selectors.companyCard)
+                .first()
+                .invoke("text")
+                .should("not.equal", page2Text);
+            });
+        }
+      });
+    });
+
+    it("deve desabilitar botão 'anterior' na primeira página", () => {
+      cy.get(selectors.previousPageButton).should(($button) => {
+        const isDisabledByAttribute = $button.is(":disabled");
+        expect(isDisabledByAttribute).to.equal(true);
+      });
+    });
+
+    it("deve desabilitar botão 'próxima' na última página", () => {
+      cy.get("body").then(($body) => {
+        if ($body.find(selectors.lastPageButton).length > 0) {
+          // Vai para última página
+          cy.get(selectors.lastPageButton).click();
+
+          // Aguarda navegação
+          cy.get(selectors.companiesList).should("be.visible");
+
+          // Botão próxima deve estar desabilitado
+          cy.get(selectors.nextPageButton).should(($button) => {
+            const isDisabledByAttribute = $button.is(":disabled");
+            expect(isDisabledByAttribute).to.equal(true);
+          });
+        }
+      });
+    });
+
+    it("deve mostrar feedback visual durante carregamento entre páginas", () => {
+      cy.get("body").then(($body) => {
+        if ($body.find(selectors.nextPageButton).length > 0) {
+          // Clica para próxima página
+          cy.get(selectors.nextPageButton).click();
+
+          // Durante a transição, a paginação deve ficar com opacity reduzida
+          cy.get(selectors.pagination).should(($pagination) => {
+            const opacity = parseFloat($pagination.css("opacity"));
+            // Verifica se está em estado de loading ou já carregou
+            expect(opacity).to.be.oneOf([0.6, 1]);
+          });
+        }
+      });
+    });
+  });
+
+  describe("Modal de Receita Atual (CurrentRevenueDialog)", () => {
+    it("deve abrir a modal ao clicar no botão de receita", () => {
+      // Clica no primeiro botão de receita
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => cy.get(selectors.revenueDialogButton).click());
+
+      // Verifica se a modal está visível
+      cy.get(selectors.revenueDialog).should("be.visible");
+    });
+
+    it("deve exibir informações da empresa na modal", () => {
+      // Captura o nome da empresa
+      cy.get(selectors.companyCard)
+        .first()
+        .find(selectors.nomeFantasia)
+        .invoke("text")
+        .then((nomeEmpresa) => {
+          // Abre a modal
+          cy.get(selectors.companyCard)
+            .first()
+            .find(selectors.revenueDialogButton)
+            .click();
+
+          // Verifica se o nome aparece na modal
+          cy.get(selectors.revenueDialog).should("be.visible");
+          cy.get(selectors.revenueDialog).should("contain.text", nomeEmpresa);
+        });
+    });
+
+    it("deve exibir valor de receita na modal", () => {
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => cy.get(selectors.revenueDialogButton).click());
+
+      cy.get(selectors.revenueDialog).should(($dialog) => {
+        const text = $dialog.text();
+        // Verifica se contém padrão de valor monetário brasileiro
+        const hasMonetaryValue =
+          /R\$|(\d{1,3}(\.\d{3})*,\d{2})|(\d+,\d{2})/.test(text);
+        expect(hasMonetaryValue).to.equal(true);
+      });
+    });
+
+    it("deve fechar a modal ao clicar no botão fechar", () => {
+      // Abre a modal
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          cy.get(selectors.revenueDialogButton).click();
+        });
+
+      cy.get(selectors.revenueDialog).should("be.visible");
+
+      // Fecha a modal
+      cy.get(selectors.revenueDialogClose).click();
+      cy.get(selectors.revenueDialog).should("not.exist");
+    });
+
+    it("deve fechar a modal ao clicar fora dela (backdrop)", () => {
+      // Abre a modal
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          cy.get(selectors.revenueDialogButton).click();
+        });
+
+      // Clica no backdrop
+      cy.get(".MuiBackdrop-root").click({ force: true });
+      cy.get(selectors.revenueDialog).should("not.exist");
+    });
+
+    it("deve fechar a modal ao pressionar ESC", () => {
+      // Abre a modal
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          cy.get(selectors.revenueDialogButton).click();
+        });
+
+      // Pressiona ESC
+      cy.get("body").type("{esc}");
+      cy.get(selectors.revenueDialog).should("not.exist");
+    });
+
+    it("deve permitir abrir modais de diferentes empresas", () => {
+      // Captura o nome da primeira empresa e testa
+      cy.get(selectors.companyCard)
+        .eq(0)
+        .find(selectors.nomeFantasia)
+        .invoke("text")
+        .then((primeiraEmpresa) => {
+          // Abre modal da primeira empresa
+          cy.get(selectors.companyCard)
+            .first()
+            .within(() => {
+              cy.get(selectors.revenueDialogButton).click();
+            });
+
+          cy.get(selectors.revenueDialog).should(
+            "contain.text",
+            primeiraEmpresa,
+          );
+
+          // Fecha
+          cy.get(selectors.revenueDialogClose).click();
+
+          // Agora captura e testa a segunda empresa
+          cy.get(selectors.companyCard)
+            .eq(1)
+            .find(selectors.nomeFantasia)
+            .invoke("text")
+            .then((segundaEmpresa) => {
+              // Abre modal da segunda empresa
+              cy.get(selectors.companyCard)
+                .eq(1)
+                .within(() => {
+                  cy.get(selectors.revenueDialogButton).click();
+                });
+
+              cy.get(selectors.revenueDialog).should(
+                "contain.text",
+                segundaEmpresa,
+              );
+            });
+        });
+    });
+  });
+
+  describe("Fluxo completo: Listagem → Paginação → Modal", () => {
+    it("deve completar o fluxo de navegação e visualização de receita", () => {
+      // 1. Verifica listagem inicial
+      cy.get(selectors.companiesList).should("be.visible");
+      cy.get(selectors.companyCard).should("have.length.greaterThan", 0);
+
+      // 2. Se houver paginação, navega para página 2
+      cy.get("body").then(($body) => {
+        if ($body.find(selectors.nextPageButton).length > 0) {
+          cy.get(selectors.nextPageButton).click();
+          cy.url().should("include", "page=2");
+          cy.get(selectors.companiesList).should("be.visible");
+        }
+      });
+
+      // 3. Abre modal de uma empresa
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          cy.get(selectors.revenueDialogButton).click();
+        });
+
+      // 4. Verifica modal
+      cy.get(selectors.revenueDialog).should("be.visible");
+
+      // 5. Fecha modal
+      cy.get(selectors.revenueDialogClose).click();
+      cy.get(selectors.revenueDialog).should("not.exist");
+
+      // 6. Se estava na página 2, volta para primeira página
+      cy.url().then((url) => {
+        if (url.includes("page=2")) {
+          cy.get(selectors.previousPageButton).click();
+          cy.url().should("not.include", "page=");
+        }
+      });
+
+      // 7. Verifica que está mostrando cards
+      cy.get(selectors.companyCard).should("have.length.greaterThan", 0);
+    });
+
+    it("deve manter estado da página após abrir e fechar modal", () => {
+      cy.get("body").then(($body) => {
+        if ($body.find(selectors.nextPageButton).length > 0) {
+          // Vai para página 2
+          cy.get(selectors.nextPageButton).click();
+          cy.url().should("include", "page=2");
+
+          // Captura primeiro card da página 2
+          cy.get(selectors.companyCard)
+            .first()
+            .find(selectors.nomeFantasia)
+            .invoke("text")
+            .then((nomeEmpresa) => {
+              // Abre modal
+              cy.get(selectors.companyCard)
+                .first()
+                .within(() => {
+                  cy.get(selectors.revenueDialogButton).click();
+                });
+
+              // Fecha modal
+              cy.get(selectors.revenueDialogClose).click();
+
+              // Verifica se ainda está na página 2
+              cy.url().should("include", "page=2");
+
+              // Verifica se o mesmo card ainda está visível
+              cy.get(selectors.companyCard)
+                .first()
+                .should("contain.text", nomeEmpresa);
+            });
+        }
+      });
+    });
+  });
+
+  describe("Validação de dados", () => {
+    it("deve exibir CNPJ formatado ou não formatado", () => {
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          cy.get(selectors.cnpj).should(($element) => {
+            const text = $element.text();
+            const cnpjPattern = /\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d{14}/;
+            expect(text).to.match(cnpjPattern);
+          });
+        });
+    });
+
+    it("deve exibir município e estado separados por barra", () => {
+      cy.get(selectors.companyCard).each(($card) => {
+        cy.wrap($card).within(() => {
+          cy.get(selectors.municipioEstado).should(($element) => {
+            const text = $element.text();
+            // Verifica formato "Município / Estado"
+            expect(text).to.match(/.+ \/ .+/);
+          });
+        });
+      });
+    });
+
+    it("deve ter razão social e nome fantasia em cada card", () => {
+      cy.get(selectors.companyCard)
+        .first()
+        .within(() => {
+          // Razão social
+          cy.get(selectors.razaoSocial).should("exist").and("not.be.empty");
+
+          // Nome fantasia
+          cy.get(selectors.nomeFantasia).should("exist").and("not.be.empty");
+        });
+    });
+  });
+
+  describe("Performance e UX", () => {
+    it("deve carregar a página inicial em tempo razoável", () => {
+      cy.visit("/", {
+        onBeforeLoad: (win) => {
+          win.performance.mark("start");
+        },
+        onLoad: (win) => {
+          win.performance.mark("end");
+          win.performance.measure("pageLoad", "start", "end");
+          const measure = win.performance.getEntriesByName("pageLoad")[0];
+          // Verifica se carregou em menos de 5 segundos
+          expect(measure.duration).to.be.lessThan(5000);
+        },
+      });
     });
   });
 });

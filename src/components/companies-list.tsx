@@ -3,7 +3,7 @@ import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import { RendimentoDialog } from "@/components/rendimento-dialog";
+import { CurrentRevenueDialog } from "@/components/current-revenue-dialog";
 import { Companies } from "@/types";
 
 type CompaniesListProps = {
@@ -31,25 +31,31 @@ export function CompaniesList({ companies }: CompaniesListProps) {
           <Card variant="outlined">
             <CardContent>
               <Typography
+                data-cy="razao-social"
                 gutterBottom
                 sx={{ color: "text.secondary", fontSize: 12 }}
               >
                 {company.razao_social}
               </Typography>
-              <Typography variant="h5" component="div">
+              <Typography data-cy="nome-fantasia" variant="h5" component="div">
                 {company.nome_fantasia}
               </Typography>
               <Typography
+                data-cy="cnpj"
                 sx={{ color: "text.secondary", mb: 1.5, fontSize: 14 }}
               >
                 {company.cnpj}
               </Typography>
-              <Typography variant="body2" sx={{ fontSize: 12 }}>
+              <Typography
+                data-cy="municipio-estado"
+                variant="body2"
+                sx={{ fontSize: 12 }}
+              >
                 {company.municipio} / {company.estado}
               </Typography>
             </CardContent>
             <CardActions>
-              <RendimentoDialog company={company} />
+              <CurrentRevenueDialog company={company} />
             </CardActions>
           </Card>
         </Box>

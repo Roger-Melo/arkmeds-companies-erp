@@ -20,7 +20,6 @@ export function PaginationControls({
   function handlePageChange(event: React.ChangeEvent<unknown>, value: number) {
     // Impede múltiplos cliques durante o loading
     if (isPending) {
-      console.log("🚫 Navegação bloqueada - carregamento em andamento");
       return;
     }
 
@@ -40,12 +39,9 @@ export function PaginationControls({
     // Envolve a navegação em startTransition
     // Isso faz isPending ser true até o Server Component terminar
     startTransition(() => {
-      console.log("🔄 Navegando para página:", value);
       router.push(newUrl);
     });
   }
-
-  console.log("⏳ Estado de loading:", isPending ? "CARREGANDO" : "PRONTO");
 
   return (
     <>
