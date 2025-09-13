@@ -64,7 +64,6 @@ export function PaginationControls({
           pointerEvents: isPending ? "none" : "auto",
         }}
       />
-      {isPending && <p>Carregando empresas...</p>}
     </>
   );
 }
