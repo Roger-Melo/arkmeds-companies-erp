@@ -1,3 +1,4 @@
+import { Header } from "@/components/header";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import type { Metadata } from "next";
 
@@ -13,7 +14,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="pt-BR">
       <body>
-        <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
+        <AppRouterCacheProvider>
+          <Header />
+          {children}
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
