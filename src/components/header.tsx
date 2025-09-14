@@ -5,7 +5,6 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
 
 function Logo() {
   return (
@@ -42,69 +41,71 @@ export function Header() {
         boxShadow: 2,
       }}
     >
-      <Container maxWidth="lg">
-        <Toolbar
+      <Toolbar
+        sx={{
+          maxWidth: "lg",
+          width: "100%",
+          mx: "auto",
+          px: { xs: 2, sm: 3, md: 3 },
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: { xs: "center", sm: "space-between" },
+          alignItems: "center",
+          py: { xs: 2, sm: 1 },
+          gap: { xs: 1, sm: 0 },
+        }}
+      >
+        <Box
           sx={{
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: { xs: "center", sm: "space-between" },
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Logo />
+        </Box>
+        <Box
+          component="nav"
+          sx={{
+            display: "flex",
             alignItems: "center",
-            py: { xs: 2, sm: 1 },
-            gap: { xs: 1, sm: 0 },
           }}
         >
           <Box
+            component="ul"
             sx={{
               display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Logo />
-          </Box>
-          <Box
-            component="nav"
-            sx={{
-              display: "flex",
+              flexDirection: "row",
               alignItems: "center",
+              gap: { xs: 1, sm: 2 },
+              listStyle: "none",
+              margin: 0,
+              padding: 0,
             }}
           >
-            <Box
-              component="ul"
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: { xs: 1, sm: 2 },
-                listStyle: "none",
-                margin: 0,
-                padding: 0,
-              }}
-            >
-              {routes.map((route) => (
-                <Box component="li" key={route.name}>
-                  <Button
-                    component={Link}
-                    href={route.path}
-                    sx={{
-                      color: "white",
-                      textTransform: "none",
-                      fontSize: { xs: "0.9rem", sm: "1rem" },
-                      px: { xs: 1.5, sm: 2 },
-                      py: { xs: 0.75, sm: 1 },
-                      minWidth: "auto",
-                      whiteSpace: "nowrap",
-                      "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      },
-                    }}
-                  >
-                    {route.name}
-                  </Button>
-                </Box>
-              ))}
-            </Box>
+            {routes.map((route) => (
+              <Box component="li" key={route.name}>
+                <Button
+                  component={Link}
+                  href={route.path}
+                  sx={{
+                    color: "white",
+                    textTransform: "none",
+                    fontSize: { xs: "0.9rem", sm: "1rem" },
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.75, sm: 1 },
+                    minWidth: "auto",
+                    whiteSpace: "nowrap",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  {route.name}
+                </Button>
+              </Box>
+            ))}
           </Box>
-        </Toolbar>
-      </Container>
+        </Box>
+      </Toolbar>
     </AppBar>
   );
 }
