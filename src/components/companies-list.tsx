@@ -12,44 +12,89 @@ type CompaniesListProps = {
 
 export function CompaniesList({ companies }: CompaniesListProps) {
   return (
-    <ul
+    <Box
+      component="ul"
       data-cy="companiesList"
-      style={{
+      sx={{
         listStyle: "none",
-        display: "flex",
-        flexDirection: "row",
-        flexWrap: "wrap",
-        width: "1000px",
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+          lg: "repeat(4, 1fr)",
+        },
+        gap: 2,
+        padding: 0,
+        margin: 0,
       }}
     >
       {companies.map((company) => (
-        <Box
-          component="li"
-          key={company.id}
-          sx={{ width: 275, listStyle: "none" }}
-        >
-          <Card variant="outlined">
-            <CardContent>
+        <Box component="li" key={company.id} sx={{ listStyle: "none" }}>
+          <Card
+            variant="outlined"
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: 2,
+                borderColor: "#244C5A",
+              },
+            }}
+          >
+            <CardContent sx={{ flexGrow: 1 }}>
               <Typography
                 data-cy="razao-social"
                 gutterBottom
-                sx={{ color: "text.secondary", fontSize: 12 }}
+                sx={{
+                  color: "text.secondary",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
               >
                 {company.razao_social}
               </Typography>
-              <Typography data-cy="nome-fantasia" variant="h5" component="div">
+              <Typography
+                data-cy="nome-fantasia"
+                variant="h6"
+                component="div"
+                sx={{
+                  fontWeight: 600,
+                  color: "#244C5A",
+                  mb: 1,
+                  minHeight: "3.5em",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
                 {company.nome_fantasia}
               </Typography>
               <Typography
                 data-cy="cnpj"
-                sx={{ color: "text.secondary", mb: 1.5, fontSize: 14 }}
+                sx={{
+                  color: "text.secondary",
+                  mb: 1.5,
+                  fontSize: 14,
+                  fontFamily: "monospace",
+                }}
               >
                 {company.cnpj}
               </Typography>
               <Typography
                 data-cy="municipio-estado"
                 variant="body2"
-                sx={{ fontSize: 12 }}
+                sx={{
+                  fontSize: 13,
+                  color: "#666",
+                  fontWeight: 500,
+                }}
               >
                 {company.municipio} / {company.estado}
               </Typography>
@@ -60,6 +105,6 @@ export function CompaniesList({ companies }: CompaniesListProps) {
           </Card>
         </Box>
       ))}
-    </ul>
+    </Box>
   );
 }

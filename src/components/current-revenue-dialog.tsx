@@ -33,6 +33,16 @@ export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
       <Button
         data-cy="revenueDialogButton"
         size="small"
+        sx={{
+          color: "#244C5A",
+          borderColor: "#244C5A",
+          "&:hover": {
+            backgroundColor: "#244C5A",
+            color: "white",
+            borderColor: "#244C5A",
+          },
+        }}
+        variant="outlined"
         onClick={handleClickOpen}
       >
         Ver rendimento atual

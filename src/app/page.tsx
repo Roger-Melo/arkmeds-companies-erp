@@ -1,6 +1,8 @@
 import { CompaniesList } from "@/components/companies-list";
 import { PaginationControls } from "@/components/pagination-controls";
 import { getPaginatedCompanies } from "@/utils/get-paginated-companies";
+import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
 import { companiesSchema } from "@/types";
 
 const options = {
@@ -38,9 +40,16 @@ export default async function Home({ searchParams }: HomeProps) {
   });
 
   return (
-    <>
-      <PaginationControls totalPages={totalPages} currentPage={currentPage} />
-      <CompaniesList companies={paginatedCompanies} />
-    </>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <CompaniesList companies={paginatedCompanies} />
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <PaginationControls
+            totalPages={totalPages}
+            currentPage={currentPage}
+          />
+        </Box>
+      </Box>
+    </Container>
   );
 }
