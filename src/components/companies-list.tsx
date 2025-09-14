@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import { CurrentRevenueDialog } from "@/components/current-revenue-dialog";
 import { Companies } from "@/types";
+import { formatCNPJ } from "@/utils/format-cnpj";
 
 type CompaniesListProps = {
   companies: Companies;
@@ -85,7 +86,7 @@ export function CompaniesList({ companies }: CompaniesListProps) {
                   fontFamily: "monospace",
                 }}
               >
-                {company.cnpj}
+                {formatCNPJ(company.cnpj)}
               </Typography>
               <Typography
                 data-cy="municipio-estado"
