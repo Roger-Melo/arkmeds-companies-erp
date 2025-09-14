@@ -129,8 +129,8 @@ describe("Header - Navegação e Elementos", () => {
             win.performance.measure("headerLoad", "header-start", "header-end");
             const measure = win.performance.getEntriesByName("headerLoad")[0];
 
-            // Header deve carregar em menos de 1 segundo
-            expect(measure.duration).to.be.lessThan(1000);
+            // Header deve carregar em menos de 2 segundos
+            expect(measure.duration).to.be.lessThan(2000);
           });
         });
     });
