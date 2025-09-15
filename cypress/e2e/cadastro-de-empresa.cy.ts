@@ -11,6 +11,9 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     razaoSocialGridContainer: '[data-cy="razaoSocialGridContainer"]',
     nomeFantasiaInput: '[data-cy="nomeFantasiaInput"] input',
     nomeFantasiaGridContainer: '[data-cy="nomeFantasiaGridContainer"]',
+    cepInput: '[data-cy="cepInput"] input',
+    cepGridContainer: '[data-cy="cepGridContainer"]',
+    companyAddressSection: '[data-cy="companyAddressSection"]',
   };
 
   // CNPJs válidos para teste
@@ -25,6 +28,18 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     wrongCheckDigit: "11222333000180",
     incomplete: "112223330001",
     tooMany: "112223330001811",
+  };
+
+  const validCEPs = {
+    formatted: "01310-100",
+    unformatted: "01310100",
+    realCEP: "04567000",
+  };
+
+  const invalidCEPs = {
+    incomplete: "0131010",
+    tooMany: "013101000",
+    invalidFormat: "12345678",
   };
 
   beforeEach(() => {
@@ -99,6 +114,112 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     it("deve renderizar o campo Nome Fantasia sem estar desabilitado inicialmente", () => {
       cy.get(selectors.nomeFantasiaInput).should("not.be.disabled");
+    });
+
+    it("deve renderizar a seção 'Endereço da Empresa'", () => {
+      cy.get(selectors.companyAddressSection)
+        .should("be.visible")
+        .and("contain.text", "Endereço da Empresa");
+    });
+
+    it("deve renderizar o campo CEP com placeholder correto", () => {
+      cy.get(selectors.cepInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "00000000");
+    });
+
+    it("deve ter o campo CEP vazio inicialmente", () => {
+      cy.get(selectors.cepInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo CEP sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.cepInput).should("not.be.disabled");
+    });
+
+    it("deve exibir helper text inicial para CEP", () => {
+      cy.get(selectors.cepInput)
+        .parent()
+        .parent()
+        .find(selectors.cnpjHelperText)
+        .should("be.visible")
+        .and("contain.text", "Digite apenas os números");
+    });
+  });
+
+  describe("Máscara de CEP", () => {
+    it("deve aplicar máscara progressivamente ao digitar", () => {
+      const cep = "01310100";
+
+      cy.get(selectors.cepInput).type("01310");
+      cy.get(selectors.cepInput).should("have.value", "01310");
+
+      cy.get(selectors.cepInput).type("1");
+      cy.get(selectors.cepInput).should("have.value", "01310-1");
+
+      cy.get(selectors.cepInput).clear().type(cep);
+      cy.get(selectors.cepInput).should("have.value", "01310-100");
+    });
+
+    it("deve limitar a 8 dígitos", () => {
+      const cepComExcesso = "013101009999";
+
+      cy.get(selectors.cepInput).type(cepComExcesso);
+      cy.get(selectors.cepInput).should("have.value", "01310-100");
+    });
+
+    it("deve aceitar apenas números", () => {
+      cy.get(selectors.cepInput).type("abc01310def100ghi");
+      cy.get(selectors.cepInput).should("have.value", "01310-100");
+    });
+
+    it("deve manter a máscara ao deletar caracteres", () => {
+      cy.get(selectors.cepInput).type("01310100");
+      cy.get(selectors.cepInput).should("have.value", "01310-100");
+
+      cy.get(selectors.cepInput).type("{backspace}");
+      cy.get(selectors.cepInput).should("have.value", "01310-10");
+
+      cy.get(selectors.cepInput).type("{backspace}");
+      cy.get(selectors.cepInput).should("have.value", "01310-1");
+
+      cy.get(selectors.cepInput).type("{backspace}");
+      cy.get(selectors.cepInput).should("have.value", "01310");
+    });
+  });
+
+  describe("Validação de CEP", () => {
+    it("deve mostrar erro para CEP incompleto", () => {
+      cy.get(selectors.cepInput).type("0131010");
+      cy.get(selectors.cepInput).blur();
+
+      cy.get(selectors.cepGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CEP inválido")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
+      cy.get(selectors.cepInput).type("1").clear();
+      cy.get(selectors.cepInput).blur();
+
+      cy.get(selectors.cepGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CEP obrigatório")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve aceitar CEP válido sem mostrar erro", () => {
+      cy.get(selectors.cepInput).type(validCEPs.unformatted);
+      cy.get(selectors.cepInput).blur();
+
+      cy.get(selectors.cepGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error")
+        .and("contain.text", "Digite apenas os números");
+    });
+
+    it("deve ter limite máximo de 9 caracteres configurado", () => {
+      cy.get(selectors.cepInput).should("have.attr", "maxlength", "9");
     });
   });
 
@@ -539,6 +660,60 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         "Novo Nome Fantasia Digitado",
       );
     });
+
+    it("deve preencher o campo CEP automaticamente quando disponível", () => {
+      const cnpjComCEP = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComCEP);
+
+      // Aguarda o campo CEP ser preenchido
+      cy.get(selectors.cepInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se a máscara foi aplicada (deve conter hífen)
+      cy.get(selectors.cepInput).invoke("val").should("include", "-");
+    });
+
+    it("deve mostrar loading no campo CEP durante busca", () => {
+      const cnpjComCEP = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComCEP);
+
+      // Verifica se o loading aparece no CEP
+      cy.get(selectors.cepGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      cy.get(selectors.cepGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.cepInput, { timeout: 10000 }).should("not.be.disabled");
+
+      cy.get(selectors.cepGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar CEP durante busca e habilitar depois", () => {
+      const cnpjComCEP = "34028316000103";
+      cy.get(selectors.cepInput).should("not.be.disabled");
+      cy.get(selectors.cnpjInput).type(cnpjComCEP);
+      cy.get(selectors.cepInput).should("be.disabled");
+      cy.get(selectors.cepInput, { timeout: 10000 }).should("not.be.disabled");
+    });
+
+    it("deve permitir edição manual do CEP após preenchimento automático", () => {
+      const cnpjComCEP = "34028316000103";
+      cy.get(selectors.cnpjInput).type(cnpjComCEP);
+      cy.get(selectors.cepInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+      cy.get(selectors.cepInput).clear().type("04567000");
+      cy.get(selectors.cepInput).should("have.value", "04567-000");
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -607,6 +782,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.nomeFantasiaGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo CEP", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.cepGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.cepGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );

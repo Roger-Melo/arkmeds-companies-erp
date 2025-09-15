@@ -13,6 +13,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
+import { applyCEPMask } from "@/utils/apply-cep-mask";
 import { validateCNPJ } from "@/utils/validate-cnpj";
 import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
 import { type CompanyInfo } from "@/types";
@@ -21,6 +22,7 @@ type CompanyFormData = {
   cnpj: string;
   razaoSocial: string;
   nomeFantasia: string;
+  cep: string;
 };
 
 type HandleCNPJInputChangeArgs = {
@@ -32,6 +34,11 @@ type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
   setValue: UseFormSetValue<CompanyFormData>;
   fieldMapping: Partial<Record<keyof CompanyFormData, keyof CompanyInfo>>;
+};
+
+type HandleCEPInputChangeArgs = {
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+  field: ControllerRenderProps<CompanyFormData, "cep">;
 };
 
 function autoFillFields({
@@ -46,7 +53,10 @@ function autoFillFields({
   ).forEach(([formField, apiField]) => {
     const value = companyInfo[apiField];
     if (value !== undefined && value !== null && value !== "") {
-      setValue(formField, String(value));
+      // Aplica a máscara do CEP se for o campo CEP
+      const formattedValue =
+        formField === "cep" ? applyCEPMask(String(value)) : String(value);
+      setValue(formField, formattedValue);
     }
   });
 }
@@ -58,7 +68,7 @@ export function FormCreateCompany() {
     formState: { errors },
     setValue,
   } = useForm<CompanyFormData>({
-    defaultValues: { cnpj: "", razaoSocial: "", nomeFantasia: "" },
+    defaultValues: { cnpj: "", razaoSocial: "", nomeFantasia: "", cep: "" },
     mode: "onChange",
   });
 
@@ -82,11 +92,17 @@ export function FormCreateCompany() {
           const fieldMapping = {
             razaoSocial: "razaoSocial",
             nomeFantasia: "nomeFantasia",
+            cep: "cep",
           } as const;
           autoFillFields({ companyInfo, setValue, fieldMapping });
         }
       }
     }
+  }
+
+  function handleCEPInputChange({ e, field }: HandleCEPInputChangeArgs) {
+    const maskedCEP = applyCEPMask(e.target.value);
+    field.onChange(maskedCEP);
   }
 
   return (
@@ -271,6 +287,93 @@ export function FormCreateCompany() {
                       },
                       "&.Mui-error fieldset": {
                         borderColor: "#d32f2f",
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#244C5A",
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+        </Grid>
+
+        {/* Seção de Endereço da Empresa */}
+        <Typography
+          variant="h6"
+          data-cy="companyAddressSection"
+          sx={{
+            my: 3,
+            color: "#244C5A",
+            fontWeight: 500,
+            fontSize: { xs: "1.1rem", sm: "1.25rem" },
+          }}
+        >
+          Endereço da Empresa
+        </Typography>
+
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {/* CEP */}
+          <Grid size={{ xs: 12, sm: 6 }} data-cy="cepGridContainer">
+            <Controller
+              name="cep"
+              control={control}
+              rules={{
+                required: "CEP obrigatório",
+                pattern: {
+                  value: /^\d{5}-\d{3}$/,
+                  message: "CEP inválido",
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="CEP"
+                  placeholder="00000000"
+                  data-cy="cepInput"
+                  disabled={isLoadingCompanyInfo}
+                  error={!!errors.cep}
+                  helperText={
+                    isLoadingCompanyInfo ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <CircularProgress size={12} />
+                        <span>Buscando dados da empresa...</span>
+                      </Box>
+                    ) : (
+                      errors.cep?.message || "Digite apenas os números"
+                    )
+                  }
+                  onChange={(e) => handleCEPInputChange({ e, field })}
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 9,
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#244C5A",
+                      },
+                      "&.Mui-error fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                      "&.Mui-disabled": {
+                        "& fieldset": {
+                          borderColor: "#244C5A",
+                          opacity: 0.6,
+                        },
                       },
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
