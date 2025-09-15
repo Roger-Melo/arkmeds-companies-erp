@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   useForm,
   Controller,
@@ -9,11 +10,14 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
+import CircularProgress from "@mui/material/CircularProgress";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { validateCNPJ } from "@/utils/validate-cnpj";
+import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
 
 type CompanyFormData = {
   cnpj: string;
+  razaoSocial: string;
 };
 
 type HandleCNPJInputChangeArgs = {
@@ -22,31 +26,35 @@ type HandleCNPJInputChangeArgs = {
 };
 
 export function FormCreateCompany() {
+  const [isLoadingCompanyInfo, setIsLoadingCompanyInfo] = useState(false);
   const {
     control,
     formState: { errors },
+    setValue,
   } = useForm<CompanyFormData>({
-    defaultValues: { cnpj: "" },
+    defaultValues: { cnpj: "", razaoSocial: "" },
     mode: "onChange",
   });
 
-  // executa ao inserir o 14º dígito de um CNPJ válido
-  function handleCNPJComplete(cnpj: string) {
-    console.log("Executou a função");
-    console.log("CNPJ completo e válido:", cnpj);
-  }
-
-  function handleCNPJInputChange({ e, field }: HandleCNPJInputChangeArgs) {
-    const maskedValue = applyCNPJMask(e.target.value);
-    field.onChange(maskedValue);
-    const numbersOnly = maskedValue.replace(/\D/g, "");
+  async function handleCNPJInputChange({
+    e,
+    field,
+  }: HandleCNPJInputChangeArgs) {
+    const maskedCNPJ = applyCNPJMask(e.target.value);
+    field.onChange(maskedCNPJ);
+    const numbersOnly = maskedCNPJ.replace(/\D/g, "");
     // Verifica se tem exatamente 14 dígitos
     if (numbersOnly.length === 14) {
       // Valida se o CNPJ é válido
-      const validationResult = validateCNPJ(maskedValue);
-      // Se for válido (retorna true), executa a função
+      const validationResult = validateCNPJ(maskedCNPJ);
+      // Se for válido, executa a action
       if (validationResult === true) {
-        handleCNPJComplete(maskedValue);
+        setIsLoadingCompanyInfo(true);
+        const companyInfo = await getCompanyInfoAction(maskedCNPJ);
+        setIsLoadingCompanyInfo(false);
+        if (companyInfo && companyInfo.razaoSocial) {
+          setValue("razaoSocial", companyInfo.razaoSocial);
+        }
       }
     }
   }
@@ -106,6 +114,76 @@ export function FormCreateCompany() {
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
                       color: "#244C5A",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          {/* Razão Social */}
+          <Grid size={{ xs: 12, sm: 6 }} data-cy="razaoSocialGridContainer">
+            <Controller
+              name="razaoSocial"
+              control={control}
+              rules={{
+                required: "Razão Social obrigatória",
+                maxLength: {
+                  value: 100,
+                  message: "Deve ter no máximo 100 caracteres",
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Razão Social"
+                  placeholder="Digite a razão social da empresa"
+                  disabled={isLoadingCompanyInfo}
+                  data-cy="razaoSocialInput"
+                  error={!!errors.razaoSocial}
+                  helperText={
+                    isLoadingCompanyInfo ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <CircularProgress size={12} />
+                        <span>Buscando dados da empresa...</span>
+                      </Box>
+                    ) : (
+                      errors.razaoSocial?.message
+                    )
+                  }
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 100,
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#244C5A",
+                      },
+                      "&.Mui-error fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                      "&.Mui-disabled": {
+                        "& fieldset": {
+                          borderColor: "#244C5A",
+                          opacity: 0.6,
+                        },
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#244C5A",
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
                     },
                   }}
                 />

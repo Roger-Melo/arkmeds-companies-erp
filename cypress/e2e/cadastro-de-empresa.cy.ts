@@ -7,6 +7,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     cnpjInput: '[data-cy="cnpjInput"] input',
     cnpjHelperText: ".MuiFormHelperText-root",
     cnpjGridContainer: '[data-cy="cnpjGridContainer"]',
+    razaoSocialInput: '[data-cy="razaoSocialInput"] input',
+    razaoSocialGridContainer: '[data-cy="razaoSocialGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -67,6 +69,20 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     it("deve ter o campo CNPJ vazio inicialmente", () => {
       cy.get(selectors.cnpjInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Razão Social com placeholder correto", () => {
+      cy.get(selectors.razaoSocialInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "Digite a razão social da empresa");
+    });
+
+    it("deve ter o campo Razão Social vazio inicialmente", () => {
+      cy.get(selectors.razaoSocialInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Razão Social sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.razaoSocialInput).should("not.be.disabled");
     });
   });
 
@@ -192,59 +208,206 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
   });
 
-  describe("Função handleCNPJComplete", () => {
-    it("deve executar handleCNPJComplete ao inserir CNPJ válido com 14 dígitos", () => {
-      // Intercepta console.log para verificar se a função foi chamada
-      cy.window().then((win) => {
-        cy.spy(win.console, "log").as("consoleLog");
-      });
+  describe("Validação de Razão Social", () => {
+    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
+      cy.get(selectors.razaoSocialInput).type("a").clear();
+      cy.get(selectors.razaoSocialInput).blur();
 
-      cy.get(selectors.cnpjInput).type(validCNPJs.unformatted);
+      cy.get(selectors.razaoSocialGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Razão Social obrigatória")
+        .and("have.class", "Mui-error");
+    });
 
-      // Verifica se os console.log foram chamados
-      cy.get("@consoleLog").should("have.been.calledWith", "Executou a função");
-      cy.get("@consoleLog").should(
-        "have.been.calledWith",
-        "CNPJ completo e válido:",
-        "11.222.333/0001-81",
+    it("deve ter limite máximo de 100 caracteres configurado", () => {
+      cy.get(selectors.razaoSocialInput).should(
+        "have.attr",
+        "maxlength",
+        "100",
       );
     });
 
-    it("não deve executar handleCNPJComplete para CNPJ inválido", () => {
-      cy.window().then((win) => {
-        cy.spy(win.console, "log").as("consoleLog");
-      });
+    it("deve impedir entrada de mais de 100 caracteres", () => {
+      const texto100 = "a".repeat(100);
+      const textoExtra = "bcdef";
 
-      cy.get(selectors.cnpjInput).type(invalidCNPJs.wrongCheckDigit);
+      cy.get(selectors.razaoSocialInput).type(texto100);
+      cy.get(selectors.razaoSocialInput).should("have.value", texto100);
 
-      // Verifica que a função NÃO foi chamada
-      cy.get("@consoleLog").should("not.have.been.called");
+      // Tenta digitar mais caracteres
+      cy.get(selectors.razaoSocialInput).type(textoExtra);
+
+      // Verifica que ainda tem apenas 100 caracteres
+      cy.get(selectors.razaoSocialInput).should("have.value", texto100);
     });
 
-    it("não deve executar handleCNPJComplete para CNPJ incompleto", () => {
-      cy.window().then((win) => {
-        cy.spy(win.console, "log").as("consoleLog");
-      });
+    it("deve aceitar Razão Social válida sem mostrar erro", () => {
+      cy.get(selectors.razaoSocialInput).type("Empresa Teste LTDA");
+      cy.get(selectors.razaoSocialInput).blur();
 
-      cy.get(selectors.cnpjInput).type("1122233300");
-
-      cy.get("@consoleLog").should("not.have.been.called");
+      cy.get(selectors.razaoSocialGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.exist");
     });
 
-    it("deve executar apenas uma vez mesmo com múltiplas edições", () => {
-      cy.window().then((win) => {
-        cy.spy(win.console, "log").as("consoleLog");
-      });
+    it("deve respeitar maxLength de 100 caracteres", () => {
+      cy.get(selectors.razaoSocialInput).should(
+        "have.attr",
+        "maxlength",
+        "100",
+      );
+    });
+  });
 
-      // Digita CNPJ válido
-      cy.get(selectors.cnpjInput).type(validCNPJs.unformatted);
+  describe("Integração com API de CNPJ (teste real)", () => {
+    const cnpjTeste = {
+      numero: "59155651000101", // CNPJ da Empresa Brasileira de Correios e Telégrafos
+      razaoSocialEsperada: "59.155.651 ROGER WATERS ALVES DE MELO",
+    };
 
-      // Adiciona e remove caracteres (não deve executar novamente)
-      cy.get(selectors.cnpjInput).type("9");
-      cy.get(selectors.cnpjInput).type("{backspace}");
+    it("deve buscar e preencher dados da empresa ao inserir CNPJ válido", () => {
+      cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
 
-      // Verifica que foi chamado apenas 2 vezes (uma para cada console.log)
-      cy.get("@consoleLog").should("have.been.calledTwice");
+      // Aguarda o campo Razão Social ser preenchido (timeout maior para chamada real)
+      cy.get(selectors.razaoSocialInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se algum valor foi preenchido
+      cy.get(selectors.razaoSocialInput)
+        .invoke("val")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("deve mostrar indicador de loading durante busca de dados reais", () => {
+      cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
+
+      // Verifica rapidamente se o loading aparece
+      cy.get(selectors.razaoSocialGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      // Verifica se o CircularProgress está visível durante o loading
+      cy.get(selectors.razaoSocialGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.razaoSocialInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      // Verifica que o loading sumiu
+      cy.get(selectors.razaoSocialGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar e habilitar campo Razão Social durante processo de busca", () => {
+      // Campo deve estar habilitado inicialmente
+      cy.get(selectors.razaoSocialInput).should("not.be.disabled");
+
+      // Digita o CNPJ
+      cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
+
+      // Verifica se o campo fica desabilitado durante a busca
+      cy.get(selectors.razaoSocialInput).should("be.disabled");
+
+      // Aguarda a busca terminar e o campo ser habilitado novamente
+      cy.get(selectors.razaoSocialInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("não deve fazer chamada à API para CNPJ inválido", () => {
+      // Digita CNPJ inválido
+      cy.get(selectors.cnpjInput).type("11111111111111");
+
+      // Aguarda para garantir que não houve chamada
+      cy.wait(2000);
+
+      // Simplesmente verifica que o campo continua vazio e habilitado
+      cy.get(selectors.razaoSocialInput)
+        .should("have.value", "")
+        .should("not.be.disabled");
+
+      // Verifica que não há spinner de loading
+      cy.get(".MuiCircularProgress-root").should("not.exist");
+    });
+
+    it("deve permitir edição manual do campo Razão Social após preenchimento automático", () => {
+      // Primeiro, preenche automaticamente via API
+      cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
+
+      // Aguarda o preenchimento automático
+      cy.get(selectors.razaoSocialInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Limpa e digita novo valor
+      cy.get(selectors.razaoSocialInput)
+        .clear()
+        .type("Nova Razão Social Digitada");
+
+      // Verifica que o valor foi alterado
+      cy.get(selectors.razaoSocialInput).should(
+        "have.value",
+        "Nova Razão Social Digitada",
+      );
+    });
+
+    it("deve buscar dados apenas uma vez por CNPJ válido", () => {
+      // Digite o CNPJ
+      cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
+
+      // Aguarda o primeiro preenchimento
+      cy.get(selectors.razaoSocialInput, { timeout: 10000 }).should(
+        "not.have.value",
+        "",
+      );
+
+      // Armazena o valor preenchido
+      cy.get(selectors.razaoSocialInput)
+        .invoke("val")
+        .then((valorPreenchido) => {
+          // Adiciona e remove um dígito (não deve buscar novamente)
+          cy.get(selectors.cnpjInput).type("9");
+          cy.get(selectors.cnpjInput).type("{backspace}");
+
+          // Aguarda um pouco
+          cy.wait(1000);
+
+          // Verifica que não apareceu loading novamente
+          cy.get(selectors.razaoSocialGridContainer)
+            .find(".MuiCircularProgress-root")
+            .should("not.exist");
+
+          // Valor deve permanecer o mesmo
+          cy.get(selectors.razaoSocialInput).should(
+            "have.value",
+            valorPreenchido,
+          );
+        });
+    });
+
+    it("deve lidar com timeout ou erro de rede graciosamente", () => {
+      // Este teste depende do comportamento da API real
+      // Se a API estiver fora do ar ou lenta, o campo deve permanecer editável
+
+      // Usa um CNPJ válido
+      cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
+
+      // Mesmo que a API falhe, o campo deve eventualmente ficar habilitado
+      // (após timeout ou erro)
+      cy.get(selectors.razaoSocialInput, { timeout: 15000 }).should(
+        "not.be.disabled",
+      );
+
+      // O usuário deve poder digitar manualmente se necessário
+      cy.get(selectors.razaoSocialInput)
+        .should("not.be.disabled")
+        .type("{selectall}Digitado Manualmente")
+        .should("have.value", "Digitado Manualmente");
     });
   });
 
@@ -282,6 +445,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.cnpjGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Razão Social", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.razaoSocialGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.razaoSocialGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );
