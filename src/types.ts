@@ -23,3 +23,35 @@ export const companiesSchema = z.array(
 
 export type Companies = z.infer<typeof companiesSchema>;
 export type Company = Companies[number];
+
+export const companySchema = z.object({
+  cnpj: z.string().length(14),
+  razaoSocial: z.string().max(100),
+  nomeFantasia: z.string().max(100),
+  descricaoSituacaoCadastral: z.string(),
+  email: z.string(),
+  telefone1: z.string(),
+  telefone2: z.string(),
+  logradouro: z.string(),
+  bairro: z.string(),
+  complemento: z.string().max(300),
+  municipio: z.string(),
+  uf: z.string().max(2),
+  cep: z.string().max(8),
+  codigoMunicipioIbge: z.number(),
+  numero: z
+    .preprocess(
+      (input) => {
+        if (typeof input === "string" && input.trim() !== "") {
+          const num = Number(input);
+          // Se não for um número válido, retorna a string original
+          return isNaN(num) ? input : num;
+        }
+        return input;
+      },
+      z.union([z.number().nonnegative().int(), z.string()]),
+    )
+    .transform(String),
+});
+
+export type CompanyInfo = z.infer<typeof companySchema>;

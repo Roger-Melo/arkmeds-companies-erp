@@ -9,6 +9,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     cnpjGridContainer: '[data-cy="cnpjGridContainer"]',
     razaoSocialInput: '[data-cy="razaoSocialInput"] input',
     razaoSocialGridContainer: '[data-cy="razaoSocialGridContainer"]',
+    nomeFantasiaInput: '[data-cy="nomeFantasiaInput"] input',
+    nomeFantasiaGridContainer: '[data-cy="nomeFantasiaGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -83,6 +85,20 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     it("deve renderizar o campo Razão Social sem estar desabilitado inicialmente", () => {
       cy.get(selectors.razaoSocialInput).should("not.be.disabled");
+    });
+
+    it("deve renderizar o campo Nome Fantasia com placeholder correto", () => {
+      cy.get(selectors.nomeFantasiaInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "Digite o nome fantasia da empresa");
+    });
+
+    it("deve ter o campo Nome Fantasia vazio inicialmente", () => {
+      cy.get(selectors.nomeFantasiaInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Nome Fantasia sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.nomeFantasiaInput).should("not.be.disabled");
     });
   });
 
@@ -259,11 +275,54 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
   });
 
-  describe("Integração com API de CNPJ (teste real)", () => {
+  describe("Validação de Nome Fantasia", () => {
+    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
+      cy.get(selectors.nomeFantasiaInput).type("a").clear();
+      cy.get(selectors.nomeFantasiaInput).blur();
+
+      cy.get(selectors.nomeFantasiaGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Nome Fantasia obrigatório")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve ter limite máximo de 100 caracteres configurado", () => {
+      cy.get(selectors.nomeFantasiaInput).should(
+        "have.attr",
+        "maxlength",
+        "100",
+      );
+    });
+
+    it("deve impedir entrada de mais de 100 caracteres", () => {
+      const texto100 = "a".repeat(100);
+      const textoExtra = "bcdef";
+
+      cy.get(selectors.nomeFantasiaInput).type(texto100);
+      cy.get(selectors.nomeFantasiaInput).should("have.value", texto100);
+
+      cy.get(selectors.nomeFantasiaInput).type(textoExtra);
+      cy.get(selectors.nomeFantasiaInput).should("have.value", texto100);
+    });
+
+    it("deve aceitar Nome Fantasia válido sem mostrar erro", () => {
+      cy.get(selectors.nomeFantasiaInput).type("Empresa Fantasia LTDA");
+      cy.get(selectors.nomeFantasiaInput).blur();
+
+      cy.get(selectors.nomeFantasiaGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.exist");
+    });
+  });
+
+  describe("Integração com API de CNPJ", () => {
     const cnpjTeste = {
-      numero: "59155651000101", // CNPJ da Empresa Brasileira de Correios e Telégrafos
+      numero: "59155651000101",
       razaoSocialEsperada: "59.155.651 ROGER WATERS ALVES DE MELO",
     };
+
+    // CNPJ que retorna nome fantasia preenchido
+    const cnpjComNomeFantasia = { numero: "34028316000103" };
 
     it("deve buscar e preencher dados da empresa ao inserir CNPJ válido", () => {
       cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
@@ -409,6 +468,77 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         .type("{selectall}Digitado Manualmente")
         .should("have.value", "Digitado Manualmente");
     });
+
+    it("deve preencher o campo Nome Fantasia automaticamente", () => {
+      cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
+
+      // Aguarda o campo Nome Fantasia ser preenchido
+      cy.get(selectors.nomeFantasiaInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se algum valor foi preenchido
+      cy.get(selectors.nomeFantasiaInput)
+        .invoke("val")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("deve mostrar loading no campo Nome Fantasia durante busca", () => {
+      cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
+
+      // Verifica se o loading aparece
+      cy.get(selectors.nomeFantasiaGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      // Verifica se o CircularProgress está visível
+      cy.get(selectors.nomeFantasiaGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.nomeFantasiaInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      // Verifica que o loading sumiu
+      cy.get(selectors.nomeFantasiaGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar Nome Fantasia durante busca e habilitar depois", () => {
+      cy.get(selectors.nomeFantasiaInput).should("not.be.disabled");
+
+      cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
+
+      // Verifica se fica desabilitado durante a busca
+      cy.get(selectors.nomeFantasiaInput).should("be.disabled");
+
+      // Aguarda ser habilitado novamente
+      cy.get(selectors.nomeFantasiaInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve permitir edição manual do Nome Fantasia após preenchimento automático", () => {
+      cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
+
+      // Aguarda o preenchimento automático
+      cy.get(selectors.nomeFantasiaInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Limpa e digita novo valor
+      cy.get(selectors.nomeFantasiaInput)
+        .clear()
+        .type("Novo Nome Fantasia Digitado");
+
+      cy.get(selectors.nomeFantasiaInput).should(
+        "have.value",
+        "Novo Nome Fantasia Digitado",
+      );
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -461,6 +591,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.razaoSocialGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Nome Fantasia", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.nomeFantasiaGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.nomeFantasiaGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );
