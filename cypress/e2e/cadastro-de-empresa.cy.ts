@@ -20,6 +20,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     municipioGridContainer: '[data-cy="municipioGridContainer"]',
     logradouroInput: '[data-cy="logradouroInput"] input',
     logradouroGridContainer: '[data-cy="logradouroGridContainer"]',
+    numeroInput: '[data-cy="numeroInput"] input',
+    numeroGridContainer: '[data-cy="numeroGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -200,6 +202,29 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     it("deve renderizar o campo Logradouro sem estar desabilitado inicialmente", () => {
       cy.get(selectors.logradouroInput).should("not.be.disabled");
+    });
+
+    it("deve renderizar o campo Número com placeholder correto", () => {
+      cy.get(selectors.numeroInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "Digite o número ou S/N");
+    });
+
+    it("deve ter o campo Número vazio inicialmente", () => {
+      cy.get(selectors.numeroInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Número sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.numeroInput).should("not.be.disabled");
+    });
+
+    it("deve exibir helper text inicial para Número", () => {
+      cy.get(selectors.numeroInput)
+        .parent()
+        .parent()
+        .find(selectors.cnpjHelperText)
+        .should("be.visible")
+        .and("contain.text", "Aceita número inteiro positivo ou 'S/N'");
     });
   });
 
@@ -620,6 +645,102 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.logradouroGridContainer)
         .find(".MuiFormHelperText-root")
         .should("not.exist");
+    });
+  });
+
+  describe("Validação de Número", () => {
+    it("deve aceitar campo vazio (campo opcional)", () => {
+      cy.get(selectors.numeroInput).focus();
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve aceitar números inteiros positivos", () => {
+      cy.get(selectors.numeroInput).type("123");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve aceitar zero", () => {
+      cy.get(selectors.numeroInput).type("0");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve aceitar S/N em maiúsculas", () => {
+      cy.get(selectors.numeroInput).type("S/N");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve aceitar s/n em minúsculas", () => {
+      cy.get(selectors.numeroInput).type("s/n");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve mostrar erro para números negativos", () => {
+      cy.get(selectors.numeroInput).type("-10");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Não pode ser negativo")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve mostrar erro para números decimais", () => {
+      cy.get(selectors.numeroInput).type("10.5");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Não pode ser decimal")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve mostrar erro para texto não numérico", () => {
+      cy.get(selectors.numeroInput).type("abc");
+      cy.get(selectors.numeroInput).blur();
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Deve ser um número ou 'S/N'")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve validar em tempo real (modo onChange)", () => {
+      // Digita um número inválido
+      cy.get(selectors.numeroInput).type("-5");
+
+      // Sem precisar blur, já deve mostrar erro
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Não pode ser negativo")
+        .and("have.class", "Mui-error");
+
+      // Corrige para um número válido
+      cy.get(selectors.numeroInput).clear().type("5");
+
+      // Erro deve sumir
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
     });
   });
 
@@ -1094,6 +1215,70 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         "Avenida Principal, 456",
       );
     });
+
+    it("deve preencher o campo Número automaticamente quando disponível", () => {
+      const cnpjComNumero = "34028316000103"; // Assumindo que este CNPJ retorna número
+
+      cy.get(selectors.cnpjInput).type(cnpjComNumero);
+
+      // Aguarda o campo Número ser preenchido
+      cy.get(selectors.numeroInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se algum valor foi preenchido
+      cy.get(selectors.numeroInput)
+        .invoke("val")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("deve mostrar loading no campo Número durante busca", () => {
+      const cnpjComNumero = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComNumero);
+
+      // Verifica se o loading aparece no Número
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.numeroInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      cy.get(selectors.numeroGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar Número durante busca e habilitar depois", () => {
+      const cnpjComNumero = "34028316000103";
+
+      cy.get(selectors.numeroInput).should("not.be.disabled");
+      cy.get(selectors.cnpjInput).type(cnpjComNumero);
+      cy.get(selectors.numeroInput).should("be.disabled");
+      cy.get(selectors.numeroInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve permitir edição manual do Número após preenchimento automático", () => {
+      const cnpjComNumero = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComNumero);
+
+      cy.get(selectors.numeroInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      cy.get(selectors.numeroInput).clear().type("S/N");
+      cy.get(selectors.numeroInput).should("have.value", "S/N");
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -1226,6 +1411,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.logradouroGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Número", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.numeroGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.numeroGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );

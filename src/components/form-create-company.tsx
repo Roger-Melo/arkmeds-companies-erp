@@ -15,6 +15,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
 import { validateCNPJ } from "@/utils/validate-cnpj";
+import { validateNumero } from "@/utils/validate-numero";
 import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
 import { type CompanyInfo } from "@/types";
 
@@ -26,6 +27,7 @@ type CompanyFormData = {
   estado: string;
   municipio: string;
   logradouro: string;
+  numero: string;
 };
 
 type HandleCNPJInputChangeArgs = {
@@ -89,6 +91,7 @@ export function FormCreateCompany() {
       estado: "",
       municipio: "",
       logradouro: "",
+      numero: "",
     },
     mode: "onChange",
   });
@@ -117,6 +120,7 @@ export function FormCreateCompany() {
             estado: "uf",
             municipio: "municipio",
             logradouro: "logradouro",
+            numero: "numero",
           } as const;
           autoFillFields({ companyInfo, setValue, fieldMapping });
         }
@@ -586,6 +590,66 @@ export function FormCreateCompany() {
                       </Box>
                     ) : (
                       errors.logradouro?.message
+                    )
+                  }
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#244C5A",
+                      },
+                      "&.Mui-error fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                      "&.Mui-disabled": {
+                        "& fieldset": {
+                          borderColor: "#244C5A",
+                          opacity: 0.6,
+                        },
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#244C5A",
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          {/* Número */}
+          <Grid size={{ xs: 12, sm: 6 }} data-cy="numeroGridContainer">
+            <Controller
+              name="numero"
+              control={control}
+              rules={{ validate: validateNumero }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Número"
+                  placeholder="Digite o número ou S/N"
+                  data-cy="numeroInput"
+                  disabled={isLoadingCompanyInfo}
+                  error={!!errors.numero}
+                  helperText={
+                    isLoadingCompanyInfo ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <CircularProgress size={12} />
+                        <span>Buscando dados da empresa...</span>
+                      </Box>
+                    ) : (
+                      errors.numero?.message ||
+                      "Aceita número inteiro positivo ou 'S/N'"
                     )
                   }
                   sx={{
