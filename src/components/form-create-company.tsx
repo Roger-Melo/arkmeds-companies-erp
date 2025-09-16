@@ -24,6 +24,7 @@ type CompanyFormData = {
   nomeFantasia: string;
   cep: string;
   estado: string;
+  municipio: string;
 };
 
 type HandleCNPJInputChangeArgs = {
@@ -85,6 +86,7 @@ export function FormCreateCompany() {
       nomeFantasia: "",
       cep: "",
       estado: "",
+      municipio: "",
     },
     mode: "onChange",
   });
@@ -111,6 +113,7 @@ export function FormCreateCompany() {
             nomeFantasia: "nomeFantasia",
             cep: "cep",
             estado: "uf",
+            municipio: "municipio",
           } as const;
           autoFillFields({ companyInfo, setValue, fieldMapping });
         }
@@ -449,6 +452,76 @@ export function FormCreateCompany() {
                     htmlInput: {
                       maxLength: 2,
                       style: { textTransform: "uppercase" },
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#244C5A",
+                      },
+                      "&.Mui-error fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                      "&.Mui-disabled": {
+                        "& fieldset": {
+                          borderColor: "#244C5A",
+                          opacity: 0.6,
+                        },
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#244C5A",
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          {/* Município */}
+          <Grid size={{ xs: 12, sm: 6 }} data-cy="municipioGridContainer">
+            <Controller
+              name="municipio"
+              control={control}
+              rules={{
+                required: "Município obrigatório",
+                maxLength: {
+                  value: 100,
+                  message: "Deve ter no máximo 100 caracteres",
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Município"
+                  placeholder="Digite o nome do município"
+                  data-cy="municipioInput"
+                  disabled={isLoadingCompanyInfo}
+                  error={!!errors.municipio}
+                  helperText={
+                    isLoadingCompanyInfo ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <CircularProgress size={12} />
+                        <span>Buscando dados da empresa...</span>
+                      </Box>
+                    ) : (
+                      errors.municipio?.message
+                    )
+                  }
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 100,
                     },
                   }}
                   sx={{

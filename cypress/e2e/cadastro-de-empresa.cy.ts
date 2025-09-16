@@ -16,6 +16,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     companyAddressSection: '[data-cy="companyAddressSection"]',
     estadoInput: '[data-cy="estadoInput"] input',
     estadoGridContainer: '[data-cy="estadoGridContainer"]',
+    municipioInput: '[data-cy="municipioInput"] input',
+    municipioGridContainer: '[data-cy="municipioGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -168,6 +170,20 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         .find(selectors.cnpjHelperText)
         .should("be.visible")
         .and("contain.text", "Digite a sigla do estado (UF)");
+    });
+
+    it("deve renderizar o campo Município com placeholder correto", () => {
+      cy.get(selectors.municipioInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "Digite o nome do município");
+    });
+
+    it("deve ter o campo Município vazio inicialmente", () => {
+      cy.get(selectors.municipioInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Município sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.municipioInput).should("not.be.disabled");
     });
   });
 
@@ -534,6 +550,42 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
   });
 
+  describe("Validação de Município", () => {
+    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
+      cy.get(selectors.municipioInput).type("a").clear();
+      cy.get(selectors.municipioInput).blur();
+
+      cy.get(selectors.municipioGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Município obrigatório")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve ter limite máximo de 100 caracteres configurado", () => {
+      cy.get(selectors.municipioInput).should("have.attr", "maxlength", "100");
+    });
+
+    it("deve impedir entrada de mais de 100 caracteres", () => {
+      const texto100 = "a".repeat(100);
+      const textoExtra = "bcdef";
+
+      cy.get(selectors.municipioInput).type(texto100);
+      cy.get(selectors.municipioInput).should("have.value", texto100);
+
+      cy.get(selectors.municipioInput).type(textoExtra);
+      cy.get(selectors.municipioInput).should("have.value", texto100);
+    });
+
+    it("deve aceitar Município válido sem mostrar erro", () => {
+      cy.get(selectors.municipioInput).type("São Paulo");
+      cy.get(selectors.municipioInput).blur();
+
+      cy.get(selectors.municipioGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.exist");
+    });
+  });
+
   describe("Integração com API de CNPJ", () => {
     const cnpjTeste = {
       numero: "59155651000101",
@@ -874,6 +926,70 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.estadoInput).clear().type("RJ");
       cy.get(selectors.estadoInput).should("have.value", "RJ");
     });
+
+    it("deve preencher o campo Município automaticamente quando disponível", () => {
+      const cnpjComMunicipio = "34028316000103"; // Assumindo que este CNPJ retorna município
+
+      cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
+
+      // Aguarda o campo Município ser preenchido
+      cy.get(selectors.municipioInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se algum valor foi preenchido
+      cy.get(selectors.municipioInput)
+        .invoke("val")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("deve mostrar loading no campo Município durante busca", () => {
+      const cnpjComMunicipio = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
+
+      // Verifica se o loading aparece no Município
+      cy.get(selectors.municipioGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      cy.get(selectors.municipioGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.municipioInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      cy.get(selectors.municipioGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar Município durante busca e habilitar depois", () => {
+      const cnpjComMunicipio = "34028316000103";
+
+      cy.get(selectors.municipioInput).should("not.be.disabled");
+      cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
+      cy.get(selectors.municipioInput).should("be.disabled");
+      cy.get(selectors.municipioInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve permitir edição manual do Município após preenchimento automático", () => {
+      const cnpjComMunicipio = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
+
+      cy.get(selectors.municipioInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      cy.get(selectors.municipioInput).clear().type("Rio de Janeiro");
+      cy.get(selectors.municipioInput).should("have.value", "Rio de Janeiro");
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -974,6 +1090,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.estadoGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Município", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.municipioGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.municipioGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );
