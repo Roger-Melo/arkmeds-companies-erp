@@ -23,6 +23,7 @@ type CompanyFormData = {
   razaoSocial: string;
   nomeFantasia: string;
   cep: string;
+  estado: string;
 };
 
 type HandleCNPJInputChangeArgs = {
@@ -61,6 +62,16 @@ function autoFillFields({
   });
 }
 
+type HandleEstadoInputChangeArgs = {
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+  field: ControllerRenderProps<CompanyFormData, "estado">;
+};
+
+function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
+  const upperCaseValue = e.target.value.toUpperCase();
+  field.onChange(upperCaseValue);
+}
+
 export function FormCreateCompany() {
   const [isLoadingCompanyInfo, setIsLoadingCompanyInfo] = useState(false);
   const {
@@ -68,7 +79,13 @@ export function FormCreateCompany() {
     formState: { errors },
     setValue,
   } = useForm<CompanyFormData>({
-    defaultValues: { cnpj: "", razaoSocial: "", nomeFantasia: "", cep: "" },
+    defaultValues: {
+      cnpj: "",
+      razaoSocial: "",
+      nomeFantasia: "",
+      cep: "",
+      estado: "",
+    },
     mode: "onChange",
   });
 
@@ -93,6 +110,7 @@ export function FormCreateCompany() {
             razaoSocial: "razaoSocial",
             nomeFantasia: "nomeFantasia",
             cep: "cep",
+            estado: "uf",
           } as const;
           autoFillFields({ companyInfo, setValue, fieldMapping });
         }
@@ -359,6 +377,78 @@ export function FormCreateCompany() {
                   slotProps={{
                     htmlInput: {
                       maxLength: 9,
+                    },
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#244C5A",
+                      },
+                      "&.Mui-error fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                      "&.Mui-disabled": {
+                        "& fieldset": {
+                          borderColor: "#244C5A",
+                          opacity: 0.6,
+                        },
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#244C5A",
+                    },
+                    "& .MuiFormHelperText-root": {
+                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          {/* Estado */}
+          <Grid size={{ xs: 12, sm: 6 }} data-cy="estadoGridContainer">
+            <Controller
+              name="estado"
+              control={control}
+              rules={{
+                required: "Estado obrigatório",
+                maxLength: {
+                  value: 2,
+                  message: "Deve ter no máximo 2 caracteres",
+                },
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Estado"
+                  placeholder="UF"
+                  data-cy="estadoInput"
+                  disabled={isLoadingCompanyInfo}
+                  error={!!errors.estado}
+                  onChange={(e) => handleEstadoInputChange({ e, field })}
+                  helperText={
+                    isLoadingCompanyInfo ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        <CircularProgress size={12} />
+                        <span>Buscando dados da empresa...</span>
+                      </Box>
+                    ) : (
+                      errors.estado?.message || "Digite a sigla do estado (UF)"
+                    )
+                  }
+                  slotProps={{
+                    htmlInput: {
+                      maxLength: 2,
+                      style: { textTransform: "uppercase" },
                     },
                   }}
                   sx={{

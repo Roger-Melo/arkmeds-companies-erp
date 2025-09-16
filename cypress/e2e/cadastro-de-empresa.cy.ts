@@ -14,6 +14,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     cepInput: '[data-cy="cepInput"] input',
     cepGridContainer: '[data-cy="cepGridContainer"]',
     companyAddressSection: '[data-cy="companyAddressSection"]',
+    estadoInput: '[data-cy="estadoInput"] input',
+    estadoGridContainer: '[data-cy="estadoGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -143,6 +145,29 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         .find(selectors.cnpjHelperText)
         .should("be.visible")
         .and("contain.text", "Digite apenas os números");
+    });
+
+    it("deve renderizar o campo Estado com placeholder correto", () => {
+      cy.get(selectors.estadoInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "UF");
+    });
+
+    it("deve ter o campo Estado vazio inicialmente", () => {
+      cy.get(selectors.estadoInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Estado sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.estadoInput).should("not.be.disabled");
+    });
+
+    it("deve exibir helper text inicial para Estado", () => {
+      cy.get(selectors.estadoInput)
+        .parent()
+        .parent()
+        .find(selectors.cnpjHelperText)
+        .should("be.visible")
+        .and("contain.text", "Digite a sigla do estado (UF)");
     });
   });
 
@@ -473,6 +498,42 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
   });
 
+  describe("Validação de Estado", () => {
+    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
+      cy.get(selectors.estadoInput).type("a").clear();
+      cy.get(selectors.estadoInput).blur();
+
+      cy.get(selectors.estadoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Estado obrigatório")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve ter limite máximo de 2 caracteres configurado", () => {
+      cy.get(selectors.estadoInput).should("have.attr", "maxlength", "2");
+    });
+
+    it("deve impedir entrada de mais de 2 caracteres", () => {
+      cy.get(selectors.estadoInput).type("ABC");
+      cy.get(selectors.estadoInput).should("have.value", "AB");
+    });
+
+    it("deve aceitar Estado válido sem mostrar erro", () => {
+      cy.get(selectors.estadoInput).type("SP");
+      cy.get(selectors.estadoInput).blur();
+
+      cy.get(selectors.estadoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error")
+        .and("contain.text", "Digite a sigla do estado (UF)");
+    });
+
+    it("deve converter texto para maiúsculas automaticamente", () => {
+      cy.get(selectors.estadoInput).type("sp");
+      cy.get(selectors.estadoInput).should("have.value", "SP");
+    });
+  });
+
   describe("Integração com API de CNPJ", () => {
     const cnpjTeste = {
       numero: "59155651000101",
@@ -751,6 +812,68 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.cepInput).clear().type("04567000");
       cy.get(selectors.cepInput).should("have.value", "04567-000");
     });
+
+    it("deve preencher o campo Estado automaticamente quando disponível", () => {
+      const cnpjComEstado = "34028316000103"; // Assumindo que este CNPJ retorna UF
+
+      cy.get(selectors.cnpjInput).type(cnpjComEstado);
+
+      // Aguarda o campo Estado ser preenchido
+      cy.get(selectors.estadoInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se tem exatamente 2 caracteres (formato UF)
+      cy.get(selectors.estadoInput).invoke("val").should("have.length", 2);
+    });
+
+    it("deve mostrar loading no campo Estado durante busca", () => {
+      const cnpjComEstado = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComEstado);
+
+      // Verifica se o loading aparece no Estado
+      cy.get(selectors.estadoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      cy.get(selectors.estadoGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.estadoInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      cy.get(selectors.estadoGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar Estado durante busca e habilitar depois", () => {
+      const cnpjComEstado = "34028316000103";
+
+      cy.get(selectors.estadoInput).should("not.be.disabled");
+      cy.get(selectors.cnpjInput).type(cnpjComEstado);
+      cy.get(selectors.estadoInput).should("be.disabled");
+      cy.get(selectors.estadoInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve permitir edição manual do Estado após preenchimento automático", () => {
+      const cnpjComEstado = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComEstado);
+
+      cy.get(selectors.estadoInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      cy.get(selectors.estadoInput).clear().type("RJ");
+      cy.get(selectors.estadoInput).should("have.value", "RJ");
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -835,6 +958,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.cepGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Estado", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.estadoGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.estadoGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );
