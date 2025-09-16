@@ -18,6 +18,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     estadoGridContainer: '[data-cy="estadoGridContainer"]',
     municipioInput: '[data-cy="municipioInput"] input',
     municipioGridContainer: '[data-cy="municipioGridContainer"]',
+    logradouroInput: '[data-cy="logradouroInput"] input',
+    logradouroGridContainer: '[data-cy="logradouroGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -184,6 +186,20 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     it("deve renderizar o campo Município sem estar desabilitado inicialmente", () => {
       cy.get(selectors.municipioInput).should("not.be.disabled");
+    });
+
+    it("deve renderizar o campo Logradouro com placeholder correto", () => {
+      cy.get(selectors.logradouroInput)
+        .should("be.visible")
+        .and("have.attr", "placeholder", "Digite o logradouro");
+    });
+
+    it("deve ter o campo Logradouro vazio inicialmente", () => {
+      cy.get(selectors.logradouroInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Logradouro sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.logradouroInput).should("not.be.disabled");
     });
   });
 
@@ -581,6 +597,27 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.municipioInput).blur();
 
       cy.get(selectors.municipioGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.exist");
+    });
+  });
+
+  describe("Validação de Logradouro", () => {
+    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
+      cy.get(selectors.logradouroInput).type("a").clear();
+      cy.get(selectors.logradouroInput).blur();
+
+      cy.get(selectors.logradouroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Logradouro obrigatório")
+        .and("have.class", "Mui-error");
+    });
+
+    it("deve aceitar Logradouro válido sem mostrar erro", () => {
+      cy.get(selectors.logradouroInput).type("Rua das Flores, 123");
+      cy.get(selectors.logradouroInput).blur();
+
+      cy.get(selectors.logradouroGridContainer)
         .find(".MuiFormHelperText-root")
         .should("not.exist");
     });
@@ -990,6 +1027,73 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.municipioInput).clear().type("Rio de Janeiro");
       cy.get(selectors.municipioInput).should("have.value", "Rio de Janeiro");
     });
+
+    it("deve preencher o campo Logradouro automaticamente quando disponível", () => {
+      const cnpjComLogradouro = "34028316000103"; // Assumindo que este CNPJ retorna logradouro
+
+      cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
+
+      // Aguarda o campo Logradouro ser preenchido
+      cy.get(selectors.logradouroInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      // Verifica se algum valor foi preenchido
+      cy.get(selectors.logradouroInput)
+        .invoke("val")
+        .should("have.length.greaterThan", 0);
+    });
+
+    it("deve mostrar loading no campo Logradouro durante busca", () => {
+      const cnpjComLogradouro = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
+
+      // Verifica se o loading aparece no Logradouro
+      cy.get(selectors.logradouroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      cy.get(selectors.logradouroGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.logradouroInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      cy.get(selectors.logradouroGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar Logradouro durante busca e habilitar depois", () => {
+      const cnpjComLogradouro = "34028316000103";
+
+      cy.get(selectors.logradouroInput).should("not.be.disabled");
+      cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
+      cy.get(selectors.logradouroInput).should("be.disabled");
+      cy.get(selectors.logradouroInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve permitir edição manual do Logradouro após preenchimento automático", () => {
+      const cnpjComLogradouro = "34028316000103";
+
+      cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
+
+      cy.get(selectors.logradouroInput, { timeout: 10000 })
+        .should("not.have.value", "")
+        .and("not.be.disabled");
+
+      cy.get(selectors.logradouroInput).clear().type("Avenida Principal, 456");
+      cy.get(selectors.logradouroInput).should(
+        "have.value",
+        "Avenida Principal, 456",
+      );
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -1106,6 +1210,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.municipioGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Logradouro", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.logradouroGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.logradouroGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );
