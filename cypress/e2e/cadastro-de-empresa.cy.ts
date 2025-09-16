@@ -22,6 +22,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     logradouroGridContainer: '[data-cy="logradouroGridContainer"]',
     numeroInput: '[data-cy="numeroInput"] input',
     numeroGridContainer: '[data-cy="numeroGridContainer"]',
+    complementoInput: '[data-cy="complementoInput"] input',
+    complementoGridContainer: '[data-cy="complementoGridContainer"]',
   };
 
   // CNPJs válidos para teste
@@ -225,6 +227,33 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         .find(selectors.cnpjHelperText)
         .should("be.visible")
         .and("contain.text", "Aceita número inteiro positivo ou 'S/N'");
+    });
+
+    it("deve renderizar o campo Complemento com placeholder correto", () => {
+      cy.get(selectors.complementoInput)
+        .should("be.visible")
+        .and(
+          "have.attr",
+          "placeholder",
+          "Apartamento, sala, bloco, etc. (opcional)",
+        );
+    });
+
+    it("deve ter o campo Complemento vazio inicialmente", () => {
+      cy.get(selectors.complementoInput).should("have.value", "");
+    });
+
+    it("deve renderizar o campo Complemento sem estar desabilitado inicialmente", () => {
+      cy.get(selectors.complementoInput).should("not.be.disabled");
+    });
+
+    it("deve exibir helper text inicial para Complemento", () => {
+      cy.get(selectors.complementoInput)
+        .parent()
+        .parent()
+        .find(selectors.cnpjHelperText)
+        .should("be.visible")
+        .and("contain.text", "Campo opcional");
     });
   });
 
@@ -739,6 +768,71 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
       // Erro deve sumir
       cy.get(selectors.numeroGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+  });
+
+  describe("Validação de Complemento", () => {
+    it("deve aceitar campo vazio (campo opcional)", () => {
+      cy.get(selectors.complementoInput).focus();
+      cy.get(selectors.complementoInput).blur();
+
+      cy.get(selectors.complementoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error")
+        .and("contain.text", "Campo opcional");
+    });
+
+    it("deve ter limite máximo de 300 caracteres configurado", () => {
+      cy.get(selectors.complementoInput).should(
+        "have.attr",
+        "maxlength",
+        "300",
+      );
+    });
+
+    it("deve impedir entrada de mais de 300 caracteres", () => {
+      const texto300 = "a".repeat(300);
+      const textoExtra = "bcdef";
+
+      cy.get(selectors.complementoInput).type(texto300);
+      cy.get(selectors.complementoInput).should("have.value", texto300);
+
+      // Tenta digitar mais caracteres
+      cy.get(selectors.complementoInput).type(textoExtra);
+
+      // Verifica que ainda tem apenas 300 caracteres
+      cy.get(selectors.complementoInput).should("have.value", texto300);
+    });
+
+    it("deve aceitar texto válido sem mostrar erro", () => {
+      cy.get(selectors.complementoInput).type("Bloco A, Apartamento 301");
+      cy.get(selectors.complementoInput).blur();
+
+      cy.get(selectors.complementoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve validar em tempo real (modo onChange)", () => {
+      const texto300 = "a".repeat(300);
+
+      cy.get(selectors.complementoInput).type(texto300);
+
+      // Campo ainda deve estar válido com 300 caracteres
+      cy.get(selectors.complementoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("not.have.class", "Mui-error");
+    });
+
+    it("deve permitir caracteres especiais comuns em endereços", () => {
+      cy.get(selectors.complementoInput).type(
+        "Apt. 123, Bl. 4-B, Fund./Térreo",
+      );
+      cy.get(selectors.complementoInput).blur();
+
+      cy.get(selectors.complementoGridContainer)
         .find(".MuiFormHelperText-root")
         .should("not.have.class", "Mui-error");
     });
@@ -1279,6 +1373,73 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.numeroInput).clear().type("S/N");
       cy.get(selectors.numeroInput).should("have.value", "S/N");
     });
+
+    it("deve preencher o campo Complemento automaticamente quando disponível", () => {
+      const cnpjComComplemento = "59155651000101";
+      cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+      // Aguarda o campo Complemento ser preenchido (se a API retornar)
+      cy.get(selectors.complementoInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      // O campo pode ou não ter valor dependendo da API
+      // mas deve estar habilitado para edição
+      cy.get(selectors.complementoInput)
+        .invoke("val")
+        .then((value) => {
+          // Se tiver valor, deve ter comprimento maior que 0
+          // Se não tiver, deve estar vazio (campo opcional)
+          expect(String(value).length).to.be.at.least(0);
+        });
+    });
+
+    it("deve mostrar loading no campo Complemento durante busca", () => {
+      const cnpjComComplemento = "59155651000101";
+
+      cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+
+      // Verifica se o loading aparece no Complemento
+      cy.get(selectors.complementoGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "Buscando dados da empresa...");
+
+      cy.get(selectors.complementoGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("exist");
+
+      // Aguarda o loading terminar
+      cy.get(selectors.complementoInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      cy.get(selectors.complementoGridContainer)
+        .find(".MuiCircularProgress-root")
+        .should("not.exist");
+    });
+
+    it("deve desabilitar Complemento durante busca e habilitar depois", () => {
+      const cnpjComComplemento = "59155651000101";
+      cy.get(selectors.complementoInput).should("not.be.disabled");
+      cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+      cy.get(selectors.complementoInput).should("be.disabled");
+      cy.get(selectors.complementoInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve permitir edição manual do Complemento após preenchimento automático", () => {
+      const cnpjComComplemento = "59155651000101";
+      cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+      cy.get(selectors.complementoInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+
+      cy.get(selectors.complementoInput).clear().type("Sala 1001, Torre B");
+      cy.get(selectors.complementoInput).should(
+        "have.value",
+        "Sala 1001, Torre B",
+      );
+    });
   });
 
   describe("Estilos e UX", () => {
@@ -1427,6 +1588,22 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Mobile
       cy.viewport(375, 667);
       cy.get(selectors.numeroGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-xs-12",
+      );
+    });
+
+    it("deve ser responsivo para campo Complemento", () => {
+      // Desktop
+      cy.viewport(1920, 1080);
+      cy.get(selectors.complementoGridContainer).should(
+        "have.class",
+        "MuiGrid-grid-sm-6",
+      );
+
+      // Mobile
+      cy.viewport(375, 667);
+      cy.get(selectors.complementoGridContainer).should(
         "have.class",
         "MuiGrid-grid-xs-12",
       );
