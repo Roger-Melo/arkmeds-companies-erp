@@ -13,7 +13,6 @@ Sistema de gerenciamento de empresas desenvolvido com Next.js 15, React 19 e Mat
 - [Configuração](#️-configuração)
 - [Executando o Projeto](#-executando-o-projeto)
 - [Testes](#-testes)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
 - [API Endpoints](#-api-endpoints)
 
 ## 🚀 Tecnologias
