@@ -56,5 +56,6 @@ export async function createCompanyAction(data: CompanyFormData) {
     };
   }
 
+  revalidatePath("/", "page");
   redirect("/");
 }
