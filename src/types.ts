@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ControllerRenderProps } from "react-hook-form";
 
 export const companiesSchema = z.array(
   z
@@ -66,4 +67,9 @@ export type CompanyFormData = {
   logradouro: string;
   numero: string;
   complemento: string;
+};
+
+export type HandleCNPJInputChange = {
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+  field: ControllerRenderProps<CompanyFormData, "cnpj">;
 };

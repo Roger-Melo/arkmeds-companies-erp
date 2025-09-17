@@ -19,13 +19,13 @@ import { validateCNPJ } from "@/utils/validate-cnpj";
 import { validateNumero } from "@/utils/validate-numero";
 import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
 import { createCompanyAction } from "@/actions/create-company-action";
-import type { CompanyInfo, CompanyFormData } from "@/types";
+import type {
+  CompanyInfo,
+  CompanyFormData,
+  HandleCNPJInputChange,
+} from "@/types";
 import Alert from "@mui/material/Alert";
-
-type HandleCNPJInputChange = {
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
-  field: ControllerRenderProps<CompanyFormData, "cnpj">;
-};
+import { CNPJGrid } from "./form-create-company/cnpj";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -165,49 +165,11 @@ export function FormCreateCompany() {
         </Typography>
 
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {/* CNPJ */}
-          <Grid size={{ xs: 12, sm: 6 }} data-cy="cnpjGridContainer">
-            <Controller
-              name="cnpj"
-              control={control}
-              rules={{
-                required: "CNPJ obrigatório",
-                validate: validateCNPJ,
-              }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="CNPJ"
-                  placeholder="00000000000000"
-                  data-cy="cnpjInput"
-                  error={!!errors.cnpj}
-                  helperText={
-                    errors.cnpj?.message || "Digite apenas os números"
-                  }
-                  onChange={(e) => handleCNPJInputChange({ e, field })}
-                  slotProps={{
-                    htmlInput: {
-                      maxLength: 18, // 14 dígitos + 4 caracteres de formatação
-                    },
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#244C5A",
-                      },
-                      "&.Mui-error fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#244C5A",
-                    },
-                  }}
-                />
-              )}
-            />
-          </Grid>
+          <CNPJGrid
+            control={control}
+            errors={errors}
+            handleCNPJInputChange={handleCNPJInputChange}
+          />
 
           {/* Razão Social */}
           <Grid size={{ xs: 12, sm: 6 }} data-cy="razaoSocialGridContainer">
