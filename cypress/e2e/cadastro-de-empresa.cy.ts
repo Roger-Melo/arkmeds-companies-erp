@@ -84,10 +84,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
 
     it("deve exibir helper text inicial", () => {
-      cy.get(selectors.cnpjInput)
-        .parent()
-        .parent()
-        .find(selectors.cnpjHelperText)
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
         .should("be.visible")
         .and("contain.text", "Digite apenas os números");
     });
@@ -1676,7 +1674,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     // Função auxiliar para testar responsividade
     function testResponsiveness(fieldName: string, selector: string) {
-      it.only(`deve ser responsivo para campo ${fieldName}`, () => {
+      it(`deve ser responsivo para campo ${fieldName}`, () => {
         // Desktop
         cy.viewport(1920, 1080);
         cy.get(selector).should("have.class", "MuiGrid-grid-sm-6");
