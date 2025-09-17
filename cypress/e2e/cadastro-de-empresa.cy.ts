@@ -24,6 +24,8 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     numeroGridContainer: '[data-cy="numeroGridContainer"]',
     complementoInput: '[data-cy="complementoInput"] input',
     complementoGridContainer: '[data-cy="complementoGridContainer"]',
+    submitButton: '[data-cy="submitButton"]',
+    errorAlert: '[data-cy="errorAlert"]',
   };
 
   // CNPJs válidos para teste
@@ -254,6 +256,17 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         .find(selectors.cnpjHelperText)
         .should("be.visible")
         .and("contain.text", "Campo opcional");
+    });
+
+    it("deve renderizar o botão de cadastrar empresa", () => {
+      cy.get(selectors.submitButton)
+        .should("be.visible")
+        .and("contain.text", "Cadastrar Empresa")
+        .and("not.be.disabled");
+    });
+
+    it("deve ter o botão com tipo submit", () => {
+      cy.get(selectors.submitButton).should("have.attr", "type", "submit");
     });
   });
 
@@ -1439,6 +1452,186 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
         "have.value",
         "Sala 1001, Torre B",
       );
+    });
+  });
+
+  describe("Submissão do formulário", () => {
+    const validFormData = {
+      cnpj: "11222333000181",
+      razaoSocial: "Empresa Teste LTDA",
+      nomeFantasia: "Empresa Teste",
+      cep: "01310100",
+      estado: "SP",
+      municipio: "São Paulo",
+      logradouro: "Avenida Paulista",
+      numero: "1000",
+      complemento: "Sala 100",
+    };
+
+    it("deve desabilitar o botão durante o carregamento de dados da API do CNPJ", () => {
+      cy.get(selectors.cnpjInput).type(validFormData.cnpj);
+      // Durante a busca de dados, o botão deve ficar desabilitado
+      cy.get(selectors.submitButton).should("be.disabled");
+      // Após a busca terminar, o botão deve ser habilitado novamente
+      cy.get(selectors.submitButton, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+    });
+
+    it("deve submeter o formulário com dados válidos", () => {
+      // Preenche todos os campos obrigatórios
+      cy.get(selectors.cnpjInput).type(validFormData.cnpj);
+      // Aguarda o carregamento dos dados automáticos
+      cy.get(selectors.razaoSocialInput, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+      // Completa/ajusta campos que podem não vir da API
+      cy.get(selectors.razaoSocialInput)
+        .clear()
+        .type(validFormData.razaoSocial);
+      cy.get(selectors.nomeFantasiaInput)
+        .clear()
+        .type(validFormData.nomeFantasia);
+      cy.get(selectors.cepInput).clear().type(validFormData.cep);
+      cy.get(selectors.estadoInput).clear().type(validFormData.estado);
+      cy.get(selectors.municipioInput).clear().type(validFormData.municipio);
+      cy.get(selectors.logradouroInput).clear().type(validFormData.logradouro);
+      cy.get(selectors.numeroInput).clear().type(validFormData.numero);
+      cy.get(selectors.complementoInput)
+        .clear()
+        .type(validFormData.complemento);
+      // Submete o formulário
+      cy.get(selectors.submitButton).click();
+      // Verifica se o botão fica desabilitado durante o envio
+      cy.get(selectors.submitButton).should("be.disabled");
+      // Como a action faz redirect para "/", verifica a navegação
+      cy.url().should("eq", `${Cypress.config().baseUrl}/`);
+    });
+
+    it("não deve submeter o formulário com campos obrigatórios vazios", () => {
+      // Tenta submeter sem preencher nada
+      cy.get(selectors.submitButton).click();
+      // Deve continuar na mesma página
+      cy.url().should("include", "/cadastro-de-empresa");
+      // Deve mostrar erros nos campos obrigatórios
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ obrigatório");
+    });
+  });
+
+  describe("Validação no momento do envio do form", () => {
+    it("deve validar CNPJ inválido ao submeter", () => {
+      // Preenche com CNPJ inválido
+      cy.get(selectors.cnpjInput).type("11111111111111");
+
+      // Preenche outros campos para garantir que só o CNPJ está errado
+      cy.get(selectors.razaoSocialInput).type("Empresa Teste");
+      cy.get(selectors.nomeFantasiaInput).type("Teste");
+      cy.get(selectors.cepInput).type("01310100");
+      cy.get(selectors.estadoInput).type("SP");
+      cy.get(selectors.municipioInput).type("São Paulo");
+      cy.get(selectors.logradouroInput).type("Rua Teste");
+      cy.get(selectors.numeroInput).type("100");
+
+      // Tenta submeter
+      cy.get(selectors.submitButton).click();
+
+      // Deve permanecer na página
+      cy.url().should("include", "/cadastro-de-empresa");
+
+      // Deve mostrar erro no CNPJ
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ inválido");
+    });
+
+    it("não deve permitir submit com campos obrigatórios vazios", () => {
+      cy.visit("/cadastro-de-empresa");
+      // Clica direto no botão sem preencher nada
+      cy.get(selectors.submitButton).click();
+      // Deve permanecer na página
+      cy.url().should("include", "/cadastro-de-empresa");
+      // Verifica que os erros aparecem para TODOS os campos obrigatórios
+      const camposObrigatorios = [
+        { selector: selectors.cnpjGridContainer, erro: "CNPJ obrigatório" },
+        {
+          selector: selectors.razaoSocialGridContainer,
+          erro: "Razão Social obrigatória",
+        },
+        {
+          selector: selectors.nomeFantasiaGridContainer,
+          erro: "Nome Fantasia obrigatório",
+        },
+        { selector: selectors.cepGridContainer, erro: "CEP obrigatório" },
+        { selector: selectors.estadoGridContainer, erro: "Estado obrigatório" },
+        {
+          selector: selectors.municipioGridContainer,
+          erro: "Município obrigatório",
+        },
+        {
+          selector: selectors.logradouroGridContainer,
+          erro: "Logradouro obrigatório",
+        },
+      ];
+
+      camposObrigatorios.forEach(({ selector, erro }) => {
+        cy.get(selector)
+          .find(".MuiFormHelperText-root")
+          .should("contain.text", erro);
+      });
+    });
+
+    it("deve impedir submit enquanto houver erros de validação", () => {
+      cy.visit("/cadastro-de-empresa");
+      // Preenche com CNPJ inválido
+      cy.get(selectors.cnpjInput).type("11111111111111");
+      // Preenche os outros campos corretamente
+      cy.get(selectors.razaoSocialInput).type("Empresa Teste");
+      cy.get(selectors.nomeFantasiaInput).type("Teste");
+      cy.get(selectors.cepInput).type("01310100");
+      cy.get(selectors.estadoInput).type("SP");
+      cy.get(selectors.municipioInput).type("São Paulo");
+      cy.get(selectors.logradouroInput).type("Rua Teste");
+      cy.get(selectors.numeroInput).type("100");
+      // Verifica que o erro do CNPJ está visível
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ inválido")
+        .and("have.class", "Mui-error");
+      // Tenta submeter
+      cy.get(selectors.submitButton).click();
+      // Deve permanecer na página (não deve redirecionar)
+      cy.url().should("include", "/cadastro-de-empresa");
+      // O erro do CNPJ deve continuar visível
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ inválido");
+    });
+  });
+
+  describe("Estado do botão de submit", () => {
+    it("deve manter botão desabilitado enquanto houver loading de CNPJ e durante submissão", () => {
+      // Durante busca de CNPJ
+      cy.get(selectors.cnpjInput).type("34028316000103");
+      cy.get(selectors.submitButton).should("be.disabled");
+      // Após busca terminar
+      cy.get(selectors.submitButton, { timeout: 10000 }).should(
+        "not.be.disabled",
+      );
+      // Preenche campos restantes
+      cy.get(selectors.razaoSocialInput).should("not.have.value", "");
+      // Durante submissão
+      cy.get(selectors.submitButton).click();
+      cy.get(selectors.submitButton).should("be.disabled");
+    });
+
+    it("deve exibir estilos corretos no botão quando desabilitado", () => {
+      cy.get(selectors.cnpjInput).type("34028316000103");
+      // Durante loading, verifica estilo desabilitado
+      cy.get(selectors.submitButton)
+        .should("be.disabled")
+        .and("have.css", "opacity", "0.6");
     });
   });
 

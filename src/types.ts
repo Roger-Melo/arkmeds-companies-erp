@@ -55,3 +55,15 @@ export const companySchema = z.object({
 });
 
 export type CompanyInfo = z.infer<typeof companySchema>;
+
+export type CompanyFormData = {
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia: string;
+  cep: string;
+  estado: string;
+  municipio: string;
+  logradouro: string;
+  numero: string;
+  complemento: string;
+};

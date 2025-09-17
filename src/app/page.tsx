@@ -8,7 +8,7 @@ import { companiesSchema } from "@/types";
 const options = {
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.COMPANIES_API_TOKEN}`,
+    Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
   },
 };
 
@@ -36,7 +36,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const paginatedCompanies = getPaginatedCompanies({
     currentPage,
     perPage,
-    validatedCompanies: validatedCompanies.data,
+    validatedCompanies: validatedCompanies.data.reverse(),
   });
 
   return (

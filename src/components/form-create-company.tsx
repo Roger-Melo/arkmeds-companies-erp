@@ -12,26 +12,17 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import CircularProgress from "@mui/material/CircularProgress";
+import Button from "@mui/material/Button";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
 import { validateCNPJ } from "@/utils/validate-cnpj";
 import { validateNumero } from "@/utils/validate-numero";
 import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
-import { type CompanyInfo } from "@/types";
+import { createCompanyAction } from "@/actions/create-company-action";
+import type { CompanyInfo, CompanyFormData } from "@/types";
+import Alert from "@mui/material/Alert";
 
-type CompanyFormData = {
-  cnpj: string;
-  razaoSocial: string;
-  nomeFantasia: string;
-  cep: string;
-  estado: string;
-  municipio: string;
-  logradouro: string;
-  numero: string;
-  complemento: string;
-};
-
-type HandleCNPJInputChangeArgs = {
+type HandleCNPJInputChange = {
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
   field: ControllerRenderProps<CompanyFormData, "cnpj">;
 };
@@ -79,10 +70,13 @@ function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
 
 export function FormCreateCompany() {
   const [isLoadingCompanyInfo, setIsLoadingCompanyInfo] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const {
     control,
     formState: { errors },
     setValue,
+    handleSubmit,
   } = useForm<CompanyFormData>({
     defaultValues: {
       cnpj: "",
@@ -98,10 +92,23 @@ export function FormCreateCompany() {
     mode: "onChange",
   });
 
-  async function handleCNPJInputChange({
-    e,
-    field,
-  }: HandleCNPJInputChangeArgs) {
+  async function onSubmit(data: CompanyFormData) {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const result = await createCompanyAction(data);
+      if (result && !result.success) {
+        setError(result.error || "Erro ao cadastrar empresa");
+        setIsSubmitting(false);
+      }
+    } catch {
+      setError("Erro inesperado. Tente novamente.");
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleCNPJInputChange({ e, field }: HandleCNPJInputChange) {
     const maskedCNPJ = applyCNPJMask(e.target.value);
     field.onChange(maskedCNPJ);
     const numbersOnly = maskedCNPJ.replace(/\D/g, "");
@@ -138,7 +145,11 @@ export function FormCreateCompany() {
 
   return (
     <>
-      <Box component="form" data-cy="companyForm">
+      <Box
+        component="form"
+        data-cy="companyForm"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         {/* Seção de Dados da Empresa */}
         <Typography
           variant="h6"
@@ -750,6 +761,55 @@ export function FormCreateCompany() {
               )}
             />
           </Grid>
+
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: 2,
+              width: "100%",
+              mt: 3,
+            }}
+          >
+            {error && (
+              <Alert
+                severity="error"
+                data-cy="errorAlert"
+                onClose={() => setError(null)}
+                sx={{
+                  maxWidth: "500px",
+                  width: "auto",
+                }}
+              >
+                {error}
+              </Alert>
+            )}
+
+            {/* Botão de Envio */}
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isLoadingCompanyInfo || isSubmitting}
+              data-cy="submitButton"
+              sx={{
+                backgroundColor: "#244C5A",
+                color: "#fff",
+                px: 4,
+                py: 1.5,
+                "&:hover": {
+                  backgroundColor: "#1a3742",
+                },
+                "&:disabled": {
+                  backgroundColor: "#244C5A",
+                  opacity: 0.6,
+                },
+              }}
+            >
+              Cadastrar Empresa
+            </Button>
+          </Box>
         </Grid>
       </Box>
     </>

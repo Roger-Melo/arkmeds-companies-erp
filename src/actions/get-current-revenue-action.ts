@@ -12,7 +12,7 @@ const currentRevenueSchema = z
 const options = {
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.COMPANIES_API_TOKEN}`,
+    Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
   },
 };
 
