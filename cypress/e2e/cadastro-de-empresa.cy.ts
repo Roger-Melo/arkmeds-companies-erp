@@ -1674,132 +1674,33 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       );
     });
 
-    it("deve ser responsivo para campo Razão Social", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.razaoSocialGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
+    // Função auxiliar para testar responsividade
+    function testResponsiveness(fieldName: string, selector: string) {
+      it.only(`deve ser responsivo para campo ${fieldName}`, () => {
+        // Desktop
+        cy.viewport(1920, 1080);
+        cy.get(selector).should("have.class", "MuiGrid-grid-sm-6");
+        // Mobile
+        cy.viewport(375, 667);
+        cy.get(selector).should("have.class", "MuiGrid-grid-xs-12");
+      });
+    }
 
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.razaoSocialGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
+    // Lista de campos para testar
+    const fieldsToTest = [
+      { name: "Razão Social", selector: selectors.razaoSocialGridContainer },
+      { name: "Nome Fantasia", selector: selectors.nomeFantasiaGridContainer },
+      { name: "CEP", selector: selectors.cepGridContainer },
+      { name: "Estado", selector: selectors.estadoGridContainer },
+      { name: "Município", selector: selectors.municipioGridContainer },
+      { name: "Logradouro", selector: selectors.logradouroGridContainer },
+      { name: "Número", selector: selectors.numeroGridContainer },
+      { name: "Complemento", selector: selectors.complementoGridContainer },
+    ];
 
-    it("deve ser responsivo para campo Nome Fantasia", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.nomeFantasiaGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.nomeFantasiaGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
-
-    it("deve ser responsivo para campo CEP", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.cepGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.cepGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
-
-    it("deve ser responsivo para campo Estado", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.estadoGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.estadoGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
-
-    it("deve ser responsivo para campo Município", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.municipioGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.municipioGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
-
-    it("deve ser responsivo para campo Logradouro", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.logradouroGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.logradouroGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
-
-    it("deve ser responsivo para campo Número", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.numeroGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.numeroGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
-    });
-
-    it("deve ser responsivo para campo Complemento", () => {
-      // Desktop
-      cy.viewport(1920, 1080);
-      cy.get(selectors.complementoGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-sm-6",
-      );
-
-      // Mobile
-      cy.viewport(375, 667);
-      cy.get(selectors.complementoGridContainer).should(
-        "have.class",
-        "MuiGrid-grid-xs-12",
-      );
+    // Executa os testes
+    fieldsToTest.forEach((field) => {
+      testResponsiveness(field.name, field.selector);
     });
   });
 
