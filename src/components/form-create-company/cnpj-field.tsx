@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import { validateCNPJ } from "@/utils/validate-cnpj";
 import type { CompanyFormData, HandleCNPJInputChange } from "@/types";
 
-type CNPJGridProps = {
+type CNPJFieldProps = {
   control: Control<CompanyFormData>;
   errors: FieldErrors<CompanyFormData>;
   handleCNPJInputChange: ({ e, field }: HandleCNPJInputChange) => void;
@@ -16,7 +16,7 @@ export function CNPJField({
   control,
   errors,
   handleCNPJInputChange,
-}: CNPJGridProps) {
+}: CNPJFieldProps) {
   return (
     <Grid size={{ xs: 12, sm: 6 }} data-cy="cnpjGridContainer">
       <Controller
