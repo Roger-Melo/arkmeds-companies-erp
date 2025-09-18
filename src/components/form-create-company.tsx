@@ -28,6 +28,7 @@ import type {
 import Alert from "@mui/material/Alert";
 import { CNPJField } from "./form-create-company/cnpj-field";
 import { RazaoSocialField } from "./form-create-company/razao-social-field";
+import { NomeFantasiaField } from "./form-create-company/nome-fantasia-field";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -181,70 +182,11 @@ export function FormCreateCompany() {
             isLoadingCompanyInfo={isLoadingCompanyInfo}
             errors={errors}
           />
-
-          {/* Nome Fantasia */}
-          <Grid size={{ xs: 12, sm: 6 }} data-cy="nomeFantasiaGridContainer">
-            <Controller
-              name="nomeFantasia"
-              control={control}
-              rules={{
-                required: "Nome Fantasia obrigatório",
-                maxLength: {
-                  value: 100,
-                  message: "Deve ter no máximo 100 caracteres",
-                },
-              }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  disabled={isLoadingCompanyInfo}
-                  fullWidth
-                  label="Nome Fantasia"
-                  placeholder="Digite o nome fantasia da empresa"
-                  data-cy="nomeFantasiaInput"
-                  error={!!errors.nomeFantasia}
-                  helperText={
-                    isLoadingCompanyInfo ? (
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <CircularProgress size={12} />
-                        <span>Buscando dados da empresa...</span>
-                      </Box>
-                    ) : (
-                      errors.nomeFantasia?.message
-                    )
-                  }
-                  slotProps={{
-                    htmlInput: {
-                      maxLength: 100,
-                    },
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#244C5A",
-                      },
-                      "&.Mui-error fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#244C5A",
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
-                    },
-                  }}
-                />
-              )}
-            />
-          </Grid>
+          <NomeFantasiaField
+            control={control}
+            isLoadingCompanyInfo={isLoadingCompanyInfo}
+            errors={errors}
+          />
         </Grid>
 
         {/* Seção de Endereço da Empresa */}

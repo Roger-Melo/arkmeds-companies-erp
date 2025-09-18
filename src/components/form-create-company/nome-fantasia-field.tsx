@@ -1,0 +1,85 @@
+"use client";
+
+import { Controller, type Control, type FieldErrors } from "react-hook-form";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
+import TextField from "@mui/material/TextField";
+import type { CompanyFormData } from "@/types";
+
+type NomeFantasiaFieldProps = {
+  control: Control<CompanyFormData>;
+  errors: FieldErrors<CompanyFormData>;
+  isLoadingCompanyInfo: boolean;
+};
+
+export function NomeFantasiaField({
+  control,
+  errors,
+  isLoadingCompanyInfo,
+}: NomeFantasiaFieldProps) {
+  return (
+    <Grid size={{ xs: 12, sm: 6 }} data-cy="nomeFantasiaGridContainer">
+      <Controller
+        name="nomeFantasia"
+        control={control}
+        rules={{
+          required: "Nome Fantasia obrigatório",
+          maxLength: {
+            value: 100,
+            message: "Deve ter no máximo 100 caracteres",
+          },
+        }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            disabled={isLoadingCompanyInfo}
+            fullWidth
+            label="Nome Fantasia"
+            placeholder="Digite o nome fantasia da empresa"
+            data-cy="nomeFantasiaInput"
+            error={!!errors.nomeFantasia}
+            helperText={
+              isLoadingCompanyInfo ? (
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <CircularProgress size={12} />
+                  <span>Buscando dados da empresa...</span>
+                </Box>
+              ) : (
+                errors.nomeFantasia?.message
+              )
+            }
+            slotProps={{
+              htmlInput: {
+                maxLength: 100,
+              },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: "#244C5A",
+                },
+                "&.Mui-error fieldset": {
+                  borderColor: "#d32f2f",
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "#244C5A",
+              },
+              "& .MuiFormHelperText-root": {
+                color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+              },
+            }}
+          />
+        )}
+      />
+    </Grid>
+  );
+}
