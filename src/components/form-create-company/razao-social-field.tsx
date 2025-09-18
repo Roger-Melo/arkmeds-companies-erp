@@ -1,23 +1,17 @@
 "use client";
 
-import { Controller, type Control, type FieldErrors } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
-import type { CompanyFormData } from "@/types";
-
-type RazaoSocialFieldProps = {
-  control: Control<CompanyFormData>;
-  errors: FieldErrors<CompanyFormData>;
-  isLoadingCompanyInfo: boolean;
-};
+import { type CommonCreateCompanyFieldProps } from "@/types";
 
 export function RazaoSocialField({
   control,
   errors,
   isLoadingCompanyInfo,
-}: RazaoSocialFieldProps) {
+}: CommonCreateCompanyFieldProps) {
   return (
     <Grid size={{ xs: 12, sm: 6 }} data-cy="razaoSocialGridContainer">
       <Controller

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { ControllerRenderProps } from "react-hook-form";
+import {
+  type Control,
+  type FieldErrors,
+  type ControllerRenderProps,
+} from "react-hook-form";
 
 export const companiesSchema = z.array(
   z
@@ -72,4 +76,10 @@ export type CompanyFormData = {
 export type HandleCNPJInputChange = {
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
   field: ControllerRenderProps<CompanyFormData, "cnpj">;
+};
+
+export type CommonCreateCompanyFieldProps = {
+  control: Control<CompanyFormData>;
+  errors: FieldErrors<CompanyFormData>;
+  isLoadingCompanyInfo: boolean;
 };

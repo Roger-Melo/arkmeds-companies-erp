@@ -1,14 +1,18 @@
 "use client";
 
-import { Controller, type Control, type FieldErrors } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import { validateCNPJ } from "@/utils/validate-cnpj";
-import type { CompanyFormData, HandleCNPJInputChange } from "@/types";
+import type {
+  HandleCNPJInputChange,
+  CommonCreateCompanyFieldProps,
+} from "@/types";
 
-type CNPJFieldProps = {
-  control: Control<CompanyFormData>;
-  errors: FieldErrors<CompanyFormData>;
+type CNPJFieldProps = Omit<
+  CommonCreateCompanyFieldProps,
+  "isLoadingCompanyInfo"
+> & {
   handleCNPJInputChange: ({ e, field }: HandleCNPJInputChange) => void;
 };
 
