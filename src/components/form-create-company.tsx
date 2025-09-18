@@ -26,7 +26,7 @@ import type {
   HandleCNPJInputChange,
 } from "@/types";
 import Alert from "@mui/material/Alert";
-import { CNPJField } from "./form-create-company/cnpj";
+import { CNPJField } from "./form-create-company/cnpj-field";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
