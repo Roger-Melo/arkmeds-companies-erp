@@ -83,3 +83,8 @@ export type CommonCreateCompanyFieldProps = {
   errors: FieldErrors<CompanyFormData>;
   isLoadingCompanyInfo: boolean;
 };
+
+export type HandleCEPInputChangeArgs = {
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+  field: ControllerRenderProps<CompanyFormData, "cep">;
+};
