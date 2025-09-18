@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   useForm,
   Controller,
@@ -72,6 +73,7 @@ export function FormCreateCompany() {
   const [isLoadingCompanyInfo, setIsLoadingCompanyInfo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const {
     control,
     formState: { errors },
@@ -98,7 +100,10 @@ export function FormCreateCompany() {
 
     try {
       const result = await createCompanyAction(data);
-      if (result && !result.success) {
+
+      if (result.success) {
+        router.push("/");
+      } else {
         setError(result.error || "Erro ao cadastrar empresa");
         setIsSubmitting(false);
       }
