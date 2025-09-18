@@ -12,7 +12,7 @@ type CNPJGridProps = {
   handleCNPJInputChange: ({ e, field }: HandleCNPJInputChange) => void;
 };
 
-export function CNPJGrid({
+export function CNPJField({
   control,
   errors,
   handleCNPJInputChange,

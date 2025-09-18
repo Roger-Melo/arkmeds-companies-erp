@@ -26,7 +26,7 @@ import type {
   HandleCNPJInputChange,
 } from "@/types";
 import Alert from "@mui/material/Alert";
-import { CNPJGrid } from "./form-create-company/cnpj";
+import { CNPJField } from "./form-create-company/cnpj";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -170,7 +170,7 @@ export function FormCreateCompany() {
         </Typography>
 
         <Grid container spacing={{ xs: 2, sm: 3 }}>
-          <CNPJGrid
+          <CNPJField
             control={control}
             errors={errors}
             handleCNPJInputChange={handleCNPJInputChange}
