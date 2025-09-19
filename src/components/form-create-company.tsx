@@ -6,7 +6,6 @@ import { useForm, type UseFormSetValue } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
 import { validateCNPJ } from "@/utils/validate-cnpj";
@@ -19,7 +18,6 @@ import type {
   HandleCEPInputChangeArgs,
   HandleEstadoInputChangeArgs,
 } from "@/types";
-import Alert from "@mui/material/Alert";
 import { CNPJField } from "./form-create-company/cnpj-field";
 import { RazaoSocialField } from "./form-create-company/razao-social-field";
 import { NomeFantasiaField } from "./form-create-company/nome-fantasia-field";
@@ -29,6 +27,7 @@ import { MunicipioField } from "./form-create-company/municipio-field";
 import { LogradouroField } from "./form-create-company/logradouro-field";
 import { NumeroField } from "./form-create-company/numero-field";
 import { ComplementoField } from "./form-create-company/complemento-field";
+import { FormFooter } from "./form-create-company/form-footer";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -226,54 +225,12 @@ export function FormCreateCompany() {
             errors={errors}
             isLoadingCompanyInfo={isLoadingCompanyInfo}
           />
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: 2,
-              width: "100%",
-              mt: 3,
-            }}
-          >
-            {error && (
-              <Alert
-                severity="error"
-                data-cy="errorAlert"
-                onClose={() => setError(null)}
-                sx={{
-                  maxWidth: "500px",
-                  width: "auto",
-                }}
-              >
-                {error}
-              </Alert>
-            )}
-
-            {/* Botão de Envio */}
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={isLoadingCompanyInfo || isSubmitting}
-              data-cy="submitButton"
-              sx={{
-                backgroundColor: "#244C5A",
-                color: "#fff",
-                px: 4,
-                py: 1.5,
-                "&:hover": {
-                  backgroundColor: "#1a3742",
-                },
-                "&:disabled": {
-                  backgroundColor: "#244C5A",
-                  opacity: 0.6,
-                },
-              }}
-            >
-              Cadastrar Empresa
-            </Button>
-          </Box>
+          <FormFooter
+            error={error}
+            setError={setError}
+            isLoadingCompanyInfo={isLoadingCompanyInfo}
+            isSubmitting={isSubmitting}
+          />
         </Grid>
       </Box>
     </>
