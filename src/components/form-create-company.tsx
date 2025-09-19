@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type UseFormSetValue } from "react-hook-form";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
@@ -28,6 +27,7 @@ import { LogradouroField } from "./form-create-company/logradouro-field";
 import { NumeroField } from "./form-create-company/numero-field";
 import { ComplementoField } from "./form-create-company/complemento-field";
 import { FormFooter } from "./form-create-company/form-footer";
+import { FormHeading } from "./form-create-company/form-heading";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -147,19 +147,7 @@ export function FormCreateCompany() {
         onSubmit={handleSubmit(onSubmit)}
       >
         {/* Seção de Dados da Empresa */}
-        <Typography
-          variant="h6"
-          data-cy="companyDataSection"
-          sx={{
-            mb: 3,
-            color: "#244C5A",
-            fontWeight: 500,
-            fontSize: { xs: "1.1rem", sm: "1.25rem" },
-          }}
-        >
-          Dados da Empresa
-        </Typography>
-
+        <FormHeading text="Dados da Empresa" cyValue="companyDataSection" />
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           <CNPJField
             control={control}
@@ -177,21 +165,12 @@ export function FormCreateCompany() {
             errors={errors}
           />
         </Grid>
-
         {/* Seção de Endereço da Empresa */}
-        <Typography
-          variant="h6"
-          data-cy="companyAddressSection"
-          sx={{
-            my: 3,
-            color: "#244C5A",
-            fontWeight: 500,
-            fontSize: { xs: "1.1rem", sm: "1.25rem" },
-          }}
-        >
-          Endereço da Empresa
-        </Typography>
-
+        <FormHeading
+          text="Endereço da Empresa"
+          cyValue="companyAddressSection"
+          sxObj={{ my: 3 }}
+        />
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           <CEPField
             control={control}
