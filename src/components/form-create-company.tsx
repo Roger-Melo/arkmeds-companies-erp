@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  useForm,
-  Controller,
-  type ControllerRenderProps,
-  type UseFormSetValue,
-} from "react-hook-form";
+import { useForm, Controller, type UseFormSetValue } from "react-hook-form";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -25,12 +20,14 @@ import type {
   CompanyFormData,
   HandleCNPJInputChange,
   HandleCEPInputChangeArgs,
+  HandleEstadoInputChangeArgs,
 } from "@/types";
 import Alert from "@mui/material/Alert";
 import { CNPJField } from "./form-create-company/cnpj-field";
 import { RazaoSocialField } from "./form-create-company/razao-social-field";
 import { NomeFantasiaField } from "./form-create-company/nome-fantasia-field";
 import { CEPField } from "./form-create-company/cep-field";
+import { EstadoField } from "./form-create-company/estado-field";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -57,11 +54,6 @@ function autoFillFields({
     }
   });
 }
-
-type HandleEstadoInputChangeArgs = {
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
-  field: ControllerRenderProps<CompanyFormData, "estado">;
-};
 
 function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
   const upperCaseValue = e.target.value.toUpperCase();
@@ -207,78 +199,12 @@ export function FormCreateCompany() {
             isLoadingCompanyInfo={isLoadingCompanyInfo}
             handleCEPInputChange={handleCEPInputChange}
           />
-
-          {/* Estado */}
-          <Grid size={{ xs: 12, sm: 6 }} data-cy="estadoGridContainer">
-            <Controller
-              name="estado"
-              control={control}
-              rules={{
-                required: "Estado obrigatório",
-                maxLength: {
-                  value: 2,
-                  message: "Deve ter no máximo 2 caracteres",
-                },
-              }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Estado"
-                  placeholder="UF"
-                  data-cy="estadoInput"
-                  disabled={isLoadingCompanyInfo}
-                  error={!!errors.estado}
-                  onChange={(e) => handleEstadoInputChange({ e, field })}
-                  helperText={
-                    isLoadingCompanyInfo ? (
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <CircularProgress size={12} />
-                        <span>Buscando dados da empresa...</span>
-                      </Box>
-                    ) : (
-                      errors.estado?.message || "Digite a sigla do estado (UF)"
-                    )
-                  }
-                  slotProps={{
-                    htmlInput: {
-                      maxLength: 2,
-                      style: { textTransform: "uppercase" },
-                    },
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#244C5A",
-                      },
-                      "&.Mui-error fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                      "&.Mui-disabled": {
-                        "& fieldset": {
-                          borderColor: "#244C5A",
-                          opacity: 0.6,
-                        },
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#244C5A",
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
-                    },
-                  }}
-                />
-              )}
-            />
-          </Grid>
+          <EstadoField
+            control={control}
+            errors={errors}
+            isLoadingCompanyInfo={isLoadingCompanyInfo}
+            handleEstadoInputChange={handleEstadoInputChange}
+          />
 
           {/* Município */}
           <Grid size={{ xs: 12, sm: 6 }} data-cy="municipioGridContainer">

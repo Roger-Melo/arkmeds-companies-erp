@@ -88,3 +88,8 @@ export type HandleCEPInputChangeArgs = {
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
   field: ControllerRenderProps<CompanyFormData, "cep">;
 };
+
+export type HandleEstadoInputChangeArgs = {
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+  field: ControllerRenderProps<CompanyFormData, "estado">;
+};
