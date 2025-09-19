@@ -12,7 +12,6 @@ import Button from "@mui/material/Button";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
 import { validateCNPJ } from "@/utils/validate-cnpj";
-import { validateNumero } from "@/utils/validate-numero";
 import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
 import { createCompanyAction } from "@/actions/create-company-action";
 import type {
@@ -30,6 +29,7 @@ import { CEPField } from "./form-create-company/cep-field";
 import { EstadoField } from "./form-create-company/estado-field";
 import { MunicipioField } from "./form-create-company/municipio-field";
 import { LogradouroField } from "./form-create-company/logradouro-field";
+import { NumeroField } from "./form-create-company/numero-field";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -217,66 +217,11 @@ export function FormCreateCompany() {
             errors={errors}
             isLoadingCompanyInfo={isLoadingCompanyInfo}
           />
-          {/* Número */}
-          <Grid size={{ xs: 12, sm: 6 }} data-cy="numeroGridContainer">
-            <Controller
-              name="numero"
-              control={control}
-              rules={{ validate: validateNumero }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Número"
-                  placeholder="Digite o número ou S/N"
-                  data-cy="numeroInput"
-                  disabled={isLoadingCompanyInfo}
-                  error={!!errors.numero}
-                  helperText={
-                    isLoadingCompanyInfo ? (
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <CircularProgress size={12} />
-                        <span>Buscando dados da empresa...</span>
-                      </Box>
-                    ) : (
-                      errors.numero?.message ||
-                      "Aceita número inteiro positivo ou 'S/N'"
-                    )
-                  }
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#244C5A",
-                      },
-                      "&.Mui-error fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                      "&.Mui-disabled": {
-                        "& fieldset": {
-                          borderColor: "#244C5A",
-                          opacity: 0.6,
-                        },
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#244C5A",
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
-                    },
-                  }}
-                />
-              )}
-            />
-          </Grid>
-
+          <NumeroField
+            control={control}
+            errors={errors}
+            isLoadingCompanyInfo={isLoadingCompanyInfo}
+          />
           {/* Complemento */}
           <Grid size={{ xs: 12, sm: 6 }} data-cy="complementoGridContainer">
             <Controller
