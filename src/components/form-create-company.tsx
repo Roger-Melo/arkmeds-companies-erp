@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller, type UseFormSetValue } from "react-hook-form";
+import { useForm, type UseFormSetValue } from "react-hook-form";
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import CircularProgress from "@mui/material/CircularProgress";
 import Button from "@mui/material/Button";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
@@ -30,6 +28,7 @@ import { EstadoField } from "./form-create-company/estado-field";
 import { MunicipioField } from "./form-create-company/municipio-field";
 import { LogradouroField } from "./form-create-company/logradouro-field";
 import { NumeroField } from "./form-create-company/numero-field";
+import { ComplementoField } from "./form-create-company/complemento-field";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -222,75 +221,11 @@ export function FormCreateCompany() {
             errors={errors}
             isLoadingCompanyInfo={isLoadingCompanyInfo}
           />
-          {/* Complemento */}
-          <Grid size={{ xs: 12, sm: 6 }} data-cy="complementoGridContainer">
-            <Controller
-              name="complemento"
-              control={control}
-              rules={{
-                maxLength: {
-                  value: 300,
-                  message: "Deve ter no máximo 300 caracteres",
-                },
-              }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Complemento"
-                  placeholder="Apartamento, sala, bloco, etc. (opcional)"
-                  data-cy="complementoInput"
-                  disabled={isLoadingCompanyInfo}
-                  error={!!errors.complemento}
-                  helperText={
-                    isLoadingCompanyInfo ? (
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <CircularProgress size={12} />
-                        <span>Buscando dados da empresa...</span>
-                      </Box>
-                    ) : (
-                      errors.complemento?.message || "Campo opcional"
-                    )
-                  }
-                  slotProps={{
-                    htmlInput: {
-                      maxLength: 300,
-                    },
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#244C5A",
-                      },
-                      "&.Mui-error fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                      "&.Mui-disabled": {
-                        "& fieldset": {
-                          borderColor: "#244C5A",
-                          opacity: 0.6,
-                        },
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "#244C5A",
-                    },
-                    "& .MuiFormHelperText-root": {
-                      color: isLoadingCompanyInfo ? "#244C5A" : undefined,
-                    },
-                  }}
-                />
-              )}
-            />
-          </Grid>
-
+          <ComplementoField
+            control={control}
+            errors={errors}
+            isLoadingCompanyInfo={isLoadingCompanyInfo}
+          />
           <Box
             sx={{
               display: "flex",
