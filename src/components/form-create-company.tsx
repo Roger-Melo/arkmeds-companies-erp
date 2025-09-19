@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type UseFormSetValue } from "react-hook-form";
+import { type UseFormSetValue } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
@@ -28,6 +28,7 @@ import { NumeroField } from "./form-create-company/numero-field";
 import { ComplementoField } from "./form-create-company/complemento-field";
 import { FormFooter } from "./form-create-company/form-footer";
 import { FormHeading } from "./form-create-company/form-heading";
+import { useCompanyForm } from "@/hooks/use-company-form";
 
 type AutoFillFieldsArgs = {
   companyInfo: CompanyInfo;
@@ -70,20 +71,7 @@ export function FormCreateCompany() {
     formState: { errors },
     setValue,
     handleSubmit,
-  } = useForm<CompanyFormData>({
-    defaultValues: {
-      cnpj: "",
-      razaoSocial: "",
-      nomeFantasia: "",
-      cep: "",
-      estado: "",
-      municipio: "",
-      logradouro: "",
-      numero: "",
-      complemento: "",
-    },
-    mode: "onChange",
-  });
+  } = useCompanyForm();
 
   async function onSubmit(data: CompanyFormData) {
     setIsSubmitting(true);
