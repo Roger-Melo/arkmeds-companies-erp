@@ -1,16 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
-import { createCompanyAction } from "@/actions/create-company-action";
-import type {
-  CompanyFormData,
-  HandleCEPInputChangeArgs,
-  HandleEstadoInputChangeArgs,
-} from "@/types";
 import { CNPJField } from "./form-create-company/cnpj-field";
 import { RazaoSocialField } from "./form-create-company/razao-social-field";
 import { NomeFantasiaField } from "./form-create-company/nome-fantasia-field";
@@ -24,6 +16,11 @@ import { FormFooter } from "./form-create-company/form-footer";
 import { FormHeading } from "./form-create-company/form-heading";
 import { useCompanyForm } from "@/hooks/use-company-form";
 import { useCNPJAutoFill } from "@/hooks/use-cnpj-autofill";
+import { useFormSubmission } from "@/hooks/use-form-submission";
+import type {
+  HandleCEPInputChangeArgs,
+  HandleEstadoInputChangeArgs,
+} from "@/types";
 
 function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
   const upperCaseValue = e.target.value.toUpperCase();
@@ -31,9 +28,7 @@ function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
 }
 
 export function FormCreateCompany() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const { isSubmitting, error, setError, onSubmit } = useFormSubmission();
   const {
     control,
     formState: { errors },
@@ -43,25 +38,6 @@ export function FormCreateCompany() {
   const { isLoadingCompanyInfo, handleCNPJInputChange } = useCNPJAutoFill({
     setValue,
   });
-
-  async function onSubmit(data: CompanyFormData) {
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const result = await createCompanyAction(data);
-
-      if (result.success) {
-        router.push("/");
-      } else {
-        setError(result.error || "Erro ao cadastrar empresa");
-        setIsSubmitting(false);
-      }
-    } catch {
-      setError("Erro inesperado. Tente novamente.");
-      setIsSubmitting(false);
-    }
-  }
 
   function handleCEPInputChange({ e, field }: HandleCEPInputChangeArgs) {
     const maskedCEP = applyCEPMask(e.target.value);
