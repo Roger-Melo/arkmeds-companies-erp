@@ -2,18 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { type UseFormSetValue } from "react-hook-form";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
-import { applyCNPJMask } from "@/utils/apply-cnpj-mask";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
-import { validateCNPJ } from "@/utils/validate-cnpj";
-import { getCompanyInfoAction } from "@/actions/get-cnpj-info-action";
 import { createCompanyAction } from "@/actions/create-company-action";
 import type {
-  CompanyInfo,
   CompanyFormData,
-  HandleCNPJInputChange,
   HandleCEPInputChangeArgs,
   HandleEstadoInputChangeArgs,
 } from "@/types";
@@ -29,32 +23,7 @@ import { ComplementoField } from "./form-create-company/complemento-field";
 import { FormFooter } from "./form-create-company/form-footer";
 import { FormHeading } from "./form-create-company/form-heading";
 import { useCompanyForm } from "@/hooks/use-company-form";
-
-type AutoFillFieldsArgs = {
-  companyInfo: CompanyInfo;
-  setValue: UseFormSetValue<CompanyFormData>;
-  fieldMapping: Partial<Record<keyof CompanyFormData, keyof CompanyInfo>>;
-};
-
-function autoFillFields({
-  companyInfo,
-  setValue,
-  fieldMapping,
-}: AutoFillFieldsArgs) {
-  (
-    Object.entries(fieldMapping) as Array<
-      [keyof CompanyFormData, keyof CompanyInfo]
-    >
-  ).forEach(([formField, apiField]) => {
-    const value = companyInfo[apiField];
-    if (value !== undefined && value !== null && value !== "") {
-      // Aplica a máscara do CEP se for o campo CEP
-      const formattedValue =
-        formField === "cep" ? applyCEPMask(String(value)) : String(value);
-      setValue(formField, formattedValue);
-    }
-  });
-}
+import { useCNPJAutoFill } from "@/hooks/use-cnpj-autofill";
 
 function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
   const upperCaseValue = e.target.value.toUpperCase();
@@ -62,7 +31,6 @@ function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
 }
 
 export function FormCreateCompany() {
-  const [isLoadingCompanyInfo, setIsLoadingCompanyInfo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -72,6 +40,9 @@ export function FormCreateCompany() {
     setValue,
     handleSubmit,
   } = useCompanyForm();
+  const { isLoadingCompanyInfo, handleCNPJInputChange } = useCNPJAutoFill({
+    setValue,
+  });
 
   async function onSubmit(data: CompanyFormData) {
     setIsSubmitting(true);
@@ -89,36 +60,6 @@ export function FormCreateCompany() {
     } catch {
       setError("Erro inesperado. Tente novamente.");
       setIsSubmitting(false);
-    }
-  }
-
-  async function handleCNPJInputChange({ e, field }: HandleCNPJInputChange) {
-    const maskedCNPJ = applyCNPJMask(e.target.value);
-    field.onChange(maskedCNPJ);
-    const numbersOnly = maskedCNPJ.replace(/\D/g, "");
-    // Verifica se tem exatamente 14 dígitos
-    if (numbersOnly.length === 14) {
-      // Valida se o CNPJ é válido
-      const validationResult = validateCNPJ(maskedCNPJ);
-      // Se for válido, executa a action
-      if (validationResult === true) {
-        setIsLoadingCompanyInfo(true);
-        const companyInfo = await getCompanyInfoAction(maskedCNPJ);
-        setIsLoadingCompanyInfo(false);
-        if (companyInfo) {
-          const fieldMapping = {
-            razaoSocial: "razaoSocial",
-            nomeFantasia: "nomeFantasia",
-            cep: "cep",
-            estado: "uf",
-            municipio: "municipio",
-            logradouro: "logradouro",
-            numero: "numero",
-            complemento: "complemento",
-          } as const;
-          autoFillFields({ companyInfo, setValue, fieldMapping });
-        }
-      }
     }
   }
 
