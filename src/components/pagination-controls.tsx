@@ -4,6 +4,9 @@ import Box from "@mui/material/Box";
 import Pagination from "@mui/material/Pagination";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+// Imports do Material-UI para detectar o tamanho da tela. Relevante para a paginação
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface PaginationControlsProps {
   readonly currentPage: number;
@@ -17,6 +20,9 @@ export function PaginationControls({
   const router = useRouter();
   // detecta automaticamente quando o Server Component está re-renderizando
   const [isPending, startTransition] = useTransition();
+  // Detecta o tamanho da tela
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   function handlePageChange(event: React.ChangeEvent<unknown>, value: number) {
     // Impede múltiplos cliques durante o loading
@@ -62,7 +68,7 @@ export function PaginationControls({
         // Desabilita toda a paginação durante o loading
         disabled={isPending}
         size="large"
-        siblingCount={0} // Em mobile, não mostra páginas ao lado da atual
+        siblingCount={isMobile ? 0 : 1} // Em mobile, não mostra páginas ao lado da atual
         boundaryCount={1} // Mostra apenas 1 página no início e fim
         // Feedback visual adicional
         sx={{

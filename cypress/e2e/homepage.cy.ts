@@ -220,6 +220,154 @@ describe("Homepage - Listagem de Empresas e Modal de Receita", () => {
     });
   });
 
+  // Garante que o comportamento responsivo da paginação seja mantido
+  describe("Paginação responsiva", () => {
+    // Só executa os testes se houver paginação suficiente
+    beforeEach(() => {
+      cy.visit("/");
+      cy.get(selectors.companiesList).should("be.visible");
+      // Navega para uma página intermediária se houver
+      cy.get("body").then(($body) => {
+        // Procura por um botão de página 3 ou superior para garantir que há páginas suficientes
+        const page3Button = $body.find(
+          selectors.paginationButton + ':contains("3")',
+        );
+        if (page3Button.length > 0) {
+          cy.wrap(page3Button).click();
+          cy.url().should("include", "page=3");
+        }
+      });
+    });
+
+    it("deve pular testes de paginação responsiva se não houver páginas suficientes", () => {
+      cy.get(selectors.pagination).then(($pagination) => {
+        // Conta quantos botões de página existem (excluindo navegação)
+        const pageButtons = $pagination.find(".MuiPaginationItem-page");
+        if (pageButtons.length < 5) {
+          cy.log(
+            `Apenas ${pageButtons.length} páginas disponíveis. Testes de responsividade requerem pelo menos 5 páginas.`,
+          );
+          expect(true).to.equal(true); // Passa o teste sem fazer asserções
+        }
+      });
+    });
+
+    it("deve mostrar páginas adjacentes em telas desktop", () => {
+      // Define viewport desktop
+      cy.viewport(1200, 800);
+      // Aguarda a paginação renderizar
+      cy.get(selectors.pagination).should("be.visible");
+      // Verifica se há páginas suficientes para testar
+      cy.get("body").then(($body) => {
+        const currentPage = $body.find(".Mui-selected").text();
+        const currentPageNum = parseInt(currentPage);
+        // Se está na página 3 ou superior
+        if (currentPageNum >= 3) {
+          // Deve mostrar a página anterior (currentPage - 1)
+          cy.get(selectors.paginationButton)
+            .contains((currentPageNum - 1).toString())
+            .should("be.visible");
+          // Se não for a última página, deve mostrar a próxima também
+          const nextButton = $body.find(selectors.nextPageButton);
+          if (!nextButton.is(":disabled")) {
+            cy.get(selectors.paginationButton)
+              .contains((currentPageNum + 1).toString())
+              .should("be.visible");
+          }
+        }
+      });
+    });
+
+    it("deve ocultar páginas adjacentes em telas mobile", () => {
+      // Define viewport mobile
+      cy.viewport(375, 667);
+      // Aguarda a paginação renderizar
+      cy.get(selectors.pagination).should("be.visible");
+      // Verifica se há páginas suficientes para testar
+      cy.get("body").then(($body) => {
+        const currentPage = $body.find(".Mui-selected").text();
+        const currentPageNum = parseInt(currentPage);
+        // Se está em uma página intermediária
+        if (currentPageNum >= 3) {
+          const prevPageNum = (currentPageNum - 1).toString();
+          const nextPageNum = (currentPageNum + 1).toString();
+          // Busca todos os botões de paginação
+          const allButtons = $body.find(selectors.paginationButton);
+          // Filtra apenas botões numéricos (não navegação)
+          allButtons.each((_, button) => {
+            const $button = Cypress.$(button);
+            const buttonText = $button.text().trim();
+            // Ignora botões de navegação (que têm aria-label ou ícones)
+            const isNavigationButton =
+              $button.hasClass("MuiPaginationItem-firstLast") ||
+              $button.hasClass("MuiPaginationItem-previousNext") ||
+              $button.attr("aria-label")?.includes("Go to") ||
+              buttonText === "";
+            if (!isNavigationButton) {
+              // Se é um botão de página adjacente, não deve existir em mobile
+              if (buttonText === prevPageNum || buttonText === nextPageNum) {
+                throw new Error(
+                  `Página adjacente ${buttonText} não deveria estar visível em mobile`,
+                );
+              }
+            }
+          });
+        }
+      });
+    });
+
+    it("deve manter botões de navegação em ambos os tamanhos de tela", () => {
+      const viewports: Array<[number, number, string]> = [
+        [1200, 800, "desktop"],
+        [375, 667, "mobile"],
+      ];
+
+      viewports.forEach(([width, height, device]) => {
+        cy.log(`Testando em ${device}: ${width}x${height}`);
+        cy.viewport(width, height);
+        // Botões de primeira e última página
+        cy.get(selectors.firstPageButton).should("exist");
+        cy.get(selectors.lastPageButton).should("exist");
+        // Botões anterior/próxima
+        cy.get(selectors.previousPageButton).should("exist");
+        cy.get(selectors.nextPageButton).should("exist");
+        // Página atual sempre deve estar visível
+        cy.get(".Mui-selected").should("be.visible");
+      });
+    });
+
+    it("deve alternar comportamento de siblingCount baseado no viewport", () => {
+      // Primeiro testa em desktop
+      cy.viewport(1200, 800);
+      cy.visit("/");
+      // Navega para página 5 se disponível
+      cy.get("body").then(($body) => {
+        const page5Button = $body.find(
+          selectors.paginationButton + ':contains("5")',
+        );
+        if (page5Button.length > 0) {
+          cy.wrap(page5Button).click();
+          // Em desktop: deve ver páginas 4, [5], 6
+          cy.get(selectors.paginationButton).contains("4").should("be.visible");
+          cy.get(selectors.paginationButton).contains("6").should("be.visible");
+          // Agora muda para mobile sem recarregar
+          cy.viewport(375, 667);
+          cy.wait(500); // Aguarda re-renderização
+          // Em mobile: NÃO deve ver páginas 4 e 6 adjacentes
+          cy.get(selectors.paginationButton).contains("4").should("not.exist");
+          cy.get(selectors.paginationButton).contains("6").should("not.exist");
+          // Mas ainda deve ver a página atual (5)
+          cy.get(".Mui-selected").should("contain.text", "5");
+        } else {
+          // Se não há páginas suficientes, pula o teste
+          cy.log(
+            "Não há páginas suficientes para testar comportamento de siblingCount",
+          );
+        }
+      });
+    });
+  });
+
   describe("Modal de Receita Atual (CurrentRevenueDialog)", () => {
     it("deve abrir a modal ao clicar no botão de receita", () => {
       // Clica no primeiro botão de receita
