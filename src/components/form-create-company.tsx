@@ -3,9 +3,6 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
-import { CNPJField } from "./form-create-company/cnpj-field";
-import { RazaoSocialField } from "./form-create-company/razao-social-field";
-import { NomeFantasiaField } from "./form-create-company/nome-fantasia-field";
 import { CEPField } from "./form-create-company/cep-field";
 import { EstadoField } from "./form-create-company/estado-field";
 import { MunicipioField } from "./form-create-company/municipio-field";
@@ -21,6 +18,7 @@ import type {
   HandleCEPInputChangeArgs,
   HandleEstadoInputChangeArgs,
 } from "@/types";
+import { CompanyDataSection } from "./form-create-company/sections/company-data-section";
 
 function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
   const upperCaseValue = e.target.value.toUpperCase();
@@ -51,25 +49,12 @@ export function FormCreateCompany() {
         data-cy="companyForm"
         onSubmit={handleSubmit(onSubmit)}
       >
-        {/* Seção de Dados da Empresa */}
-        <FormHeading text="Dados da Empresa" cyValue="companyDataSection" />
-        <Grid container spacing={{ xs: 2, sm: 3 }}>
-          <CNPJField
-            control={control}
-            errors={errors}
-            handleCNPJInputChange={handleCNPJInputChange}
-          />
-          <RazaoSocialField
-            control={control}
-            isLoadingCompanyInfo={isLoadingCompanyInfo}
-            errors={errors}
-          />
-          <NomeFantasiaField
-            control={control}
-            isLoadingCompanyInfo={isLoadingCompanyInfo}
-            errors={errors}
-          />
-        </Grid>
+        <CompanyDataSection
+          control={control}
+          errors={errors}
+          isLoadingCompanyInfo={isLoadingCompanyInfo}
+          handleCNPJInputChange={handleCNPJInputChange}
+        />
         {/* Seção de Endereço da Empresa */}
         <FormHeading
           text="Endereço da Empresa"
