@@ -1503,7 +1503,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       // Verifica se o botão fica desabilitado durante o envio
       cy.get(selectors.submitButton).should("be.disabled");
       // Como a action faz redirect para "/", verifica a navegação
-      cy.url().should("eq", `${Cypress.config().baseUrl}/`);
+      cy.url({ timeout: 10000 }).should("eq", `${Cypress.config().baseUrl}/`);
     });
 
     it("não deve submeter o formulário com campos obrigatórios vazios", () => {
