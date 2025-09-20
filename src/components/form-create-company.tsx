@@ -27,6 +27,11 @@ function handleEstadoInputChange({ e, field }: HandleEstadoInputChangeArgs) {
   field.onChange(upperCaseValue);
 }
 
+function handleCEPInputChange({ e, field }: HandleCEPInputChangeArgs) {
+  const maskedCEP = applyCEPMask(e.target.value);
+  field.onChange(maskedCEP);
+}
+
 export function FormCreateCompany() {
   const { isSubmitting, error, setError, onSubmit } = useFormSubmission();
   const {
@@ -38,11 +43,6 @@ export function FormCreateCompany() {
   const { isLoadingCompanyInfo, handleCNPJInputChange } = useCNPJAutoFill({
     setValue,
   });
-
-  function handleCEPInputChange({ e, field }: HandleCEPInputChangeArgs) {
-    const maskedCEP = applyCEPMask(e.target.value);
-    field.onChange(maskedCEP);
-  }
 
   return (
     <>
