@@ -1,3 +1,5 @@
+import { selectors } from "./selectors";
+
 // CNPJs válidos para teste
 export const validCNPJs = {
   formatted: "11.222.333/0001-81",
@@ -23,3 +25,64 @@ export const invalidCEPs = {
   tooMany: "013101000",
   invalidFormat: "12345678",
 };
+
+export const cnpjTeste = {
+  numero: "59155651000101",
+  razaoSocialEsperada: "59.155.651 ROGER WATERS ALVES DE MELO",
+};
+
+// CNPJ que retorna nome fantasia preenchido
+export const cnpjComNomeFantasia = { numero: "34028316000103" };
+export const cnpjComComplemento = { numero: "59155651000101" };
+
+export const formFields = [
+  {
+    name: "Nome Fantasia",
+    selector: selectors.nomeFantasiaInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "non-empty",
+  },
+  {
+    name: "Razão Social",
+    selector: selectors.razaoSocialInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "non-empty",
+  },
+  {
+    name: "CEP",
+    selector: selectors.cepInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "have-hyphen",
+  },
+  {
+    name: "Estado",
+    selector: selectors.estadoInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "exact-length",
+    expectedLength: 2,
+  },
+  {
+    name: "Município",
+    selector: selectors.municipioInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "non-empty",
+  },
+  {
+    name: "Logradouro",
+    selector: selectors.logradouroInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "non-empty",
+  },
+  {
+    name: "Número",
+    selector: selectors.numeroInput,
+    cnpjToTest: cnpjComNomeFantasia.numero,
+    expectedValueType: "non-empty",
+  },
+  {
+    name: "Complemento",
+    selector: selectors.complementoInput,
+    cnpjToTest: cnpjComComplemento.numero,
+    expectedValueType: "non-empty",
+  },
+];

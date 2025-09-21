@@ -1,4 +1,10 @@
 import { selectors } from "./shared/selectors";
+import {
+  formFields,
+  cnpjTeste,
+  cnpjComNomeFantasia,
+  cnpjComComplemento,
+} from "./shared/test-data";
 
 describe("Integração com API de CNPJ", () => {
   beforeEach(() => {
@@ -6,14 +12,6 @@ describe("Integração com API de CNPJ", () => {
     // Aguarda a página carregar completamente
     cy.get(selectors.pageTitle).should("be.visible");
   });
-
-  const cnpjTeste = {
-    numero: "59155651000101",
-    razaoSocialEsperada: "59.155.651 ROGER WATERS ALVES DE MELO",
-  };
-
-  // CNPJ que retorna nome fantasia preenchido
-  const cnpjComNomeFantasia = { numero: "34028316000103" };
 
   it("deve buscar e preencher dados da empresa ao inserir CNPJ válido", () => {
     cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
@@ -27,6 +25,33 @@ describe("Integração com API de CNPJ", () => {
     cy.get(selectors.razaoSocialInput)
       .invoke("val")
       .should("have.length.greaterThan", 0);
+  });
+
+  describe("Preenchimento automático de campos", () => {
+    formFields.forEach((field) => {
+      it(`deve preencher o campo ${field.name} automaticamente quando disponível`, () => {
+        // Preenche o campo de CNPJ
+        cy.get(selectors.cnpjInput).type(field.cnpjToTest);
+
+        // Aguarda o campo em questão ser preenchido
+        cy.get(field.selector, { timeout: 10000 })
+          .should("not.have.value", "")
+          .and("not.be.disabled");
+
+        // Validação específica baseada no tipo de campo
+        if (field.expectedValueType === "non-empty") {
+          cy.get(field.selector)
+            .invoke("val")
+            .should("have.length.greaterThan", 0);
+        } else if (field.expectedValueType === "have-hyphen") {
+          cy.get(field.selector).invoke("val").should("include", "-");
+        } else if (field.expectedValueType === "exact-length") {
+          cy.get(field.selector)
+            .invoke("val")
+            .should("have.length", field.expectedLength);
+        }
+      });
+    });
   });
 
   it("deve mostrar indicador de loading durante busca de dados reais", () => {
@@ -160,20 +185,6 @@ describe("Integração com API de CNPJ", () => {
       .should("have.value", "Digitado Manualmente");
   });
 
-  it("deve preencher o campo Nome Fantasia automaticamente", () => {
-    cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
-
-    // Aguarda o campo Nome Fantasia ser preenchido
-    cy.get(selectors.nomeFantasiaInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Verifica se algum valor foi preenchido
-    cy.get(selectors.nomeFantasiaInput)
-      .invoke("val")
-      .should("have.length.greaterThan", 0);
-  });
-
   it("deve mostrar loading no campo Nome Fantasia durante busca", () => {
     cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
 
@@ -231,20 +242,6 @@ describe("Integração com API de CNPJ", () => {
     );
   });
 
-  it("deve preencher o campo CEP automaticamente quando disponível", () => {
-    const cnpjComCEP = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComCEP);
-
-    // Aguarda o campo CEP ser preenchido
-    cy.get(selectors.cepInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Verifica se a máscara foi aplicada (deve conter hífen)
-    cy.get(selectors.cepInput).invoke("val").should("include", "-");
-  });
-
   it("deve mostrar loading no campo CEP durante busca", () => {
     const cnpjComCEP = "34028316000103";
 
@@ -283,20 +280,6 @@ describe("Integração com API de CNPJ", () => {
       .and("not.be.disabled");
     cy.get(selectors.cepInput).clear().type("04567000");
     cy.get(selectors.cepInput).should("have.value", "04567-000");
-  });
-
-  it("deve preencher o campo Estado automaticamente quando disponível", () => {
-    const cnpjComEstado = "34028316000103"; // Assumindo que este CNPJ retorna UF
-
-    cy.get(selectors.cnpjInput).type(cnpjComEstado);
-
-    // Aguarda o campo Estado ser preenchido
-    cy.get(selectors.estadoInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Verifica se tem exatamente 2 caracteres (formato UF)
-    cy.get(selectors.estadoInput).invoke("val").should("have.length", 2);
   });
 
   it("deve mostrar loading no campo Estado durante busca", () => {
@@ -341,22 +324,6 @@ describe("Integração com API de CNPJ", () => {
 
     cy.get(selectors.estadoInput).clear().type("RJ");
     cy.get(selectors.estadoInput).should("have.value", "RJ");
-  });
-
-  it("deve preencher o campo Município automaticamente quando disponível", () => {
-    const cnpjComMunicipio = "34028316000103"; // Assumindo que este CNPJ retorna município
-
-    cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
-
-    // Aguarda o campo Município ser preenchido
-    cy.get(selectors.municipioInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Verifica se algum valor foi preenchido
-    cy.get(selectors.municipioInput)
-      .invoke("val")
-      .should("have.length.greaterThan", 0);
   });
 
   it("deve mostrar loading no campo Município durante busca", () => {
@@ -405,22 +372,6 @@ describe("Integração com API de CNPJ", () => {
 
     cy.get(selectors.municipioInput).clear().type("Rio de Janeiro");
     cy.get(selectors.municipioInput).should("have.value", "Rio de Janeiro");
-  });
-
-  it("deve preencher o campo Logradouro automaticamente quando disponível", () => {
-    const cnpjComLogradouro = "34028316000103"; // Assumindo que este CNPJ retorna logradouro
-
-    cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
-
-    // Aguarda o campo Logradouro ser preenchido
-    cy.get(selectors.logradouroInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Verifica se algum valor foi preenchido
-    cy.get(selectors.logradouroInput)
-      .invoke("val")
-      .should("have.length.greaterThan", 0);
   });
 
   it("deve mostrar loading no campo Logradouro durante busca", () => {
@@ -474,22 +425,6 @@ describe("Integração com API de CNPJ", () => {
     );
   });
 
-  it("deve preencher o campo Número automaticamente quando disponível", () => {
-    const cnpjComNumero = "34028316000103"; // Assumindo que este CNPJ retorna número
-
-    cy.get(selectors.cnpjInput).type(cnpjComNumero);
-
-    // Aguarda o campo Número ser preenchido
-    cy.get(selectors.numeroInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Verifica se algum valor foi preenchido
-    cy.get(selectors.numeroInput)
-      .invoke("val")
-      .should("have.length.greaterThan", 0);
-  });
-
   it("deve mostrar loading no campo Número durante busca", () => {
     const cnpjComNumero = "34028316000103";
 
@@ -534,29 +469,8 @@ describe("Integração com API de CNPJ", () => {
     cy.get(selectors.numeroInput).should("have.value", "S/N");
   });
 
-  it("deve preencher o campo Complemento automaticamente quando disponível", () => {
-    const cnpjComComplemento = "59155651000101";
-    cy.get(selectors.cnpjInput).type(cnpjComComplemento);
-    // Aguarda o campo Complemento ser preenchido (se a API retornar)
-    cy.get(selectors.complementoInput, { timeout: 10000 }).should(
-      "not.be.disabled",
-    );
-
-    // O campo pode ou não ter valor dependendo da API
-    // mas deve estar habilitado para edição
-    cy.get(selectors.complementoInput)
-      .invoke("val")
-      .then((value) => {
-        // Se tiver valor, deve ter comprimento maior que 0
-        // Se não tiver, deve estar vazio (campo opcional)
-        expect(String(value).length).to.be.at.least(0);
-      });
-  });
-
   it("deve mostrar loading no campo Complemento durante busca", () => {
-    const cnpjComComplemento = "59155651000101";
-
-    cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+    cy.get(selectors.cnpjInput).type(cnpjComComplemento.numero);
 
     // Verifica se o loading aparece no Complemento
     cy.get(selectors.complementoGridContainer)
@@ -578,9 +492,8 @@ describe("Integração com API de CNPJ", () => {
   });
 
   it("deve desabilitar Complemento durante busca e habilitar depois", () => {
-    const cnpjComComplemento = "59155651000101";
     cy.get(selectors.complementoInput).should("not.be.disabled");
-    cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+    cy.get(selectors.cnpjInput).type(cnpjComComplemento.numero);
     cy.get(selectors.complementoInput).should("be.disabled");
     cy.get(selectors.complementoInput, { timeout: 10000 }).should(
       "not.be.disabled",
@@ -588,8 +501,7 @@ describe("Integração com API de CNPJ", () => {
   });
 
   it("deve permitir edição manual do Complemento após preenchimento automático", () => {
-    const cnpjComComplemento = "59155651000101";
-    cy.get(selectors.cnpjInput).type(cnpjComComplemento);
+    cy.get(selectors.cnpjInput).type(cnpjComComplemento.numero);
     cy.get(selectors.complementoInput, { timeout: 10000 }).should(
       "not.be.disabled",
     );
