@@ -1,5 +1,5 @@
-import { selectors } from "./shared/selectors";
-import { invalidCEPs, validCEPs } from "./shared/test-data";
+import { selectors } from "../shared/selectors";
+import { invalidCEPs, validCEPs } from "../shared/test-data";
 
 describe("Cadastro de Empresa - Validação de CEP", () => {
   beforeEach(() => {

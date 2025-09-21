@@ -1,5 +1,5 @@
-import { selectors } from "./shared/selectors";
-import { invalidCNPJs, validCNPJs } from "./shared/test-data";
+import { selectors } from "../shared/selectors";
+import { invalidCNPJs, validCNPJs } from "../shared/test-data";
 
 describe("Cadastro de Empresa - Validação de CNPJ", () => {
   beforeEach(() => {
