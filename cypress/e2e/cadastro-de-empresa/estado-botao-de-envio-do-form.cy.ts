@@ -1,4 +1,4 @@
-import { selectors } from "./shared/selectors";
+import { selectors } from "../shared/selectors";
 
 describe("Estado do botão de envio do form", () => {
   beforeEach(() => {

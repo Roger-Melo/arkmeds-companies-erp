@@ -1,4 +1,4 @@
-import { selectors } from "./shared/selectors";
+import { selectors } from "../shared/selectors";
 
 describe("Cadastro de Empresa - Renderização inicial", () => {
   beforeEach(() => {

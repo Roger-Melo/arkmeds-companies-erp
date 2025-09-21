@@ -1,23 +1,6 @@
-describe("Homepage - Listagem de Empresas e Modal de Receita", () => {
-  // Seletores reutilizáveis
-  const selectors = {
-    companiesList: '[data-cy="companiesList"]',
-    companyCard: '[data-cy="companiesList"] li',
-    pagination: ".MuiPagination-root",
-    paginationButton: ".MuiPaginationItem-root",
-    nextPageButton: '[aria-label="Go to next page"]',
-    previousPageButton: '[aria-label="Go to previous page"]',
-    firstPageButton: '[aria-label="Go to first page"]',
-    lastPageButton: '[aria-label="Go to last page"]',
-    revenueDialogButton: '[data-cy="revenueDialogButton"]',
-    revenueDialog: '[data-cy="revenueDialog"]',
-    revenueDialogClose: '[data-cy="revenueDialogClose"]',
-    razaoSocial: '[data-cy="razao-social"]',
-    nomeFantasia: '[data-cy="nome-fantasia"]',
-    cnpj: '[data-cy="cnpj"]',
-    municipioEstado: '[data-cy="municipio-estado"]',
-  };
+import { selectors } from "./shared/selectors";
 
+describe("Homepage - Listagem de Empresas e Modal de Receita", () => {
   beforeEach(() => {
     cy.visit("/");
     // Aguarda a página carregar completamente

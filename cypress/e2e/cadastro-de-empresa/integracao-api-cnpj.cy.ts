@@ -1,5 +1,5 @@
-import { selectors } from "./shared/selectors";
-import { formFields, cnpjTeste } from "./shared/test-data";
+import { selectors } from "../shared/selectors";
+import { formFields, cnpjTeste } from "../shared/test-data";
 
 describe("Integração com API de CNPJ", () => {
   beforeEach(() => {
