@@ -1,12 +1,12 @@
 import { selectors } from "./shared/selectors";
 
-beforeEach(() => {
-  cy.visit("/cadastro-de-empresa");
-  // Aguarda a página carregar completamente
-  cy.get(selectors.pageTitle).should("be.visible");
-});
-
 describe("Validação de Razão Social", () => {
+  beforeEach(() => {
+    cy.visit("/cadastro-de-empresa");
+    // Aguarda a página carregar completamente
+    cy.get(selectors.pageTitle).should("be.visible");
+  });
+
   it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
     cy.get(selectors.razaoSocialInput).type("a").clear();
     cy.get(selectors.razaoSocialInput).blur();
