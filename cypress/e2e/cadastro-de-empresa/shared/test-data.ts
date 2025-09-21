@@ -42,6 +42,7 @@ export const formFields = [
     containerSelector: selectors.nomeFantasiaGridContainer,
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "non-empty",
+    newManualValue: "Novo Nome Fantasia Digitado",
   },
   {
     name: "Razão Social",
@@ -49,6 +50,7 @@ export const formFields = [
     containerSelector: selectors.razaoSocialGridContainer,
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "non-empty",
+    newManualValue: "Novo Razão Social Digitada",
   },
   {
     name: "CEP",
@@ -56,6 +58,8 @@ export const formFields = [
     containerSelector: selectors.cepGridContainer,
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "have-hyphen",
+    newManualValue: "70002900",
+    expectedManualValue: "70002-900",
   },
   {
     name: "Estado",
@@ -64,6 +68,7 @@ export const formFields = [
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "exact-length",
     expectedLength: 2,
+    newManualValue: "RJ",
   },
   {
     name: "Município",
@@ -71,6 +76,7 @@ export const formFields = [
     containerSelector: selectors.municipioGridContainer,
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "non-empty",
+    newManualValue: "Rio de Janeiro",
   },
   {
     name: "Logradouro",
@@ -78,6 +84,7 @@ export const formFields = [
     containerSelector: selectors.logradouroGridContainer,
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "non-empty",
+    newManualValue: "Avenida Principal, 456",
   },
   {
     name: "Número",
@@ -85,6 +92,7 @@ export const formFields = [
     containerSelector: selectors.numeroGridContainer,
     cnpjToTest: cnpjComNomeFantasia.numero,
     expectedValueType: "non-empty",
+    newManualValue: "S/N",
   },
   {
     name: "Complemento",
@@ -92,5 +100,6 @@ export const formFields = [
     containerSelector: selectors.complementoGridContainer,
     cnpjToTest: cnpjComComplemento.numero,
     expectedValueType: "non-empty",
+    newManualValue: "Sala 1001, Torre B",
   },
 ];

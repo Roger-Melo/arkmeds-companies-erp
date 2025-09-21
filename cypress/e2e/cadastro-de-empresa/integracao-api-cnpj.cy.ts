@@ -1,10 +1,5 @@
 import { selectors } from "./shared/selectors";
-import {
-  formFields,
-  cnpjTeste,
-  cnpjComNomeFantasia,
-  cnpjComComplemento,
-} from "./shared/test-data";
+import { formFields, cnpjTeste } from "./shared/test-data";
 
 describe("Integração com API de CNPJ", () => {
   beforeEach(() => {
@@ -91,6 +86,23 @@ describe("Integração com API de CNPJ", () => {
     });
   });
 
+  describe("Edição manual após preenchimento automático", () => {
+    formFields.forEach((field) => {
+      it(`deve permitir edição manual do ${field.name} após preenchimento automático`, () => {
+        cy.get(selectors.cnpjInput).type(field.cnpjToTest);
+
+        cy.get(field.selector, { timeout: 10000 })
+          .should("not.have.value", "")
+          .and("not.be.disabled");
+
+        cy.get(field.selector).clear().type(field.newManualValue);
+
+        const expectedValue = field.expectedManualValue ?? field.newManualValue;
+        cy.get(field.selector).should("have.value", expectedValue);
+      });
+    });
+  });
+
   it("não deve fazer chamada à API para CNPJ inválido", () => {
     // Digita CNPJ inválido
     cy.get(selectors.cnpjInput).type("11111111111111");
@@ -105,27 +117,6 @@ describe("Integração com API de CNPJ", () => {
 
     // Verifica que não há spinner de loading
     cy.get(".MuiCircularProgress-root").should("not.exist");
-  });
-
-  it("deve permitir edição manual do campo Razão Social após preenchimento automático", () => {
-    // Primeiro, preenche automaticamente via API
-    cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
-
-    // Aguarda o preenchimento automático
-    cy.get(selectors.razaoSocialInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Limpa e digita novo valor
-    cy.get(selectors.razaoSocialInput)
-      .clear()
-      .type("Nova Razão Social Digitada");
-
-    // Verifica que o valor foi alterado
-    cy.get(selectors.razaoSocialInput).should(
-      "have.value",
-      "Nova Razão Social Digitada",
-    );
   });
 
   it("deve buscar dados apenas uma vez por CNPJ válido", () => {
@@ -180,102 +171,5 @@ describe("Integração com API de CNPJ", () => {
       .should("not.be.disabled")
       .type("{selectall}Digitado Manualmente")
       .should("have.value", "Digitado Manualmente");
-  });
-
-  it("deve permitir edição manual do Nome Fantasia após preenchimento automático", () => {
-    cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
-
-    // Aguarda o preenchimento automático
-    cy.get(selectors.nomeFantasiaInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    // Limpa e digita novo valor
-    cy.get(selectors.nomeFantasiaInput)
-      .clear()
-      .type("Novo Nome Fantasia Digitado");
-
-    cy.get(selectors.nomeFantasiaInput).should(
-      "have.value",
-      "Novo Nome Fantasia Digitado",
-    );
-  });
-
-  it("deve permitir edição manual do CEP após preenchimento automático", () => {
-    const cnpjComCEP = "34028316000103";
-    cy.get(selectors.cnpjInput).type(cnpjComCEP);
-    cy.get(selectors.cepInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-    cy.get(selectors.cepInput).clear().type("04567000");
-    cy.get(selectors.cepInput).should("have.value", "04567-000");
-  });
-
-  it("deve permitir edição manual do Estado após preenchimento automático", () => {
-    const cnpjComEstado = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComEstado);
-
-    cy.get(selectors.estadoInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    cy.get(selectors.estadoInput).clear().type("RJ");
-    cy.get(selectors.estadoInput).should("have.value", "RJ");
-  });
-
-  it("deve permitir edição manual do Município após preenchimento automático", () => {
-    const cnpjComMunicipio = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
-
-    cy.get(selectors.municipioInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    cy.get(selectors.municipioInput).clear().type("Rio de Janeiro");
-    cy.get(selectors.municipioInput).should("have.value", "Rio de Janeiro");
-  });
-
-  it("deve permitir edição manual do Logradouro após preenchimento automático", () => {
-    const cnpjComLogradouro = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
-
-    cy.get(selectors.logradouroInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    cy.get(selectors.logradouroInput).clear().type("Avenida Principal, 456");
-    cy.get(selectors.logradouroInput).should(
-      "have.value",
-      "Avenida Principal, 456",
-    );
-  });
-
-  it("deve permitir edição manual do Número após preenchimento automático", () => {
-    const cnpjComNumero = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComNumero);
-
-    cy.get(selectors.numeroInput, { timeout: 10000 })
-      .should("not.have.value", "")
-      .and("not.be.disabled");
-
-    cy.get(selectors.numeroInput).clear().type("S/N");
-    cy.get(selectors.numeroInput).should("have.value", "S/N");
-  });
-
-  it("deve permitir edição manual do Complemento após preenchimento automático", () => {
-    cy.get(selectors.cnpjInput).type(cnpjComComplemento.numero);
-    cy.get(selectors.complementoInput, { timeout: 10000 }).should(
-      "not.be.disabled",
-    );
-
-    cy.get(selectors.complementoInput).clear().type("Sala 1001, Torre B");
-    cy.get(selectors.complementoInput).should(
-      "have.value",
-      "Sala 1001, Torre B",
-    );
   });
 });
