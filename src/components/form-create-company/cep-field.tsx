@@ -45,6 +45,7 @@ export function CEPField({
               isLoadingCompanyInfo ? (
                 <Box
                   component="span"
+                  data-cy="cepHelperText"
                   sx={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -55,7 +56,9 @@ export function CEPField({
                   <span>Buscando dados da empresa...</span>
                 </Box>
               ) : (
-                errors.cep?.message || "Digite apenas os números"
+                <span data-cy="cepHelperText">
+                  {errors.cep?.message || "Digite apenas os números"}
+                </span>
               )
             }
             onChange={(e) => handleCEPInputChange({ e, field })}

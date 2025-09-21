@@ -5,6 +5,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     companyForm: '[data-cy="companyForm"]',
     companyDataSection: '[data-cy="companyDataSection"]',
     cnpjInput: '[data-cy="cnpjInput"] input',
+    cnpjInputElement: '[data-cy="cnpjInputElement"]',
     cnpjHelperText: ".MuiFormHelperText-root",
     cnpjGridContainer: '[data-cy="cnpjGridContainer"]',
     razaoSocialInput: '[data-cy="razaoSocialInput"] input',
@@ -12,17 +13,21 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     nomeFantasiaInput: '[data-cy="nomeFantasiaInput"] input',
     nomeFantasiaGridContainer: '[data-cy="nomeFantasiaGridContainer"]',
     cepInput: '[data-cy="cepInput"] input',
+    cepHelperText: '[data-cy="cepHelperText"]',
     cepGridContainer: '[data-cy="cepGridContainer"]',
     companyAddressSection: '[data-cy="companyAddressSection"]',
     estadoInput: '[data-cy="estadoInput"] input',
+    estadoHelperText: '[data-cy="estadoHelperText"]',
     estadoGridContainer: '[data-cy="estadoGridContainer"]',
     municipioInput: '[data-cy="municipioInput"] input',
     municipioGridContainer: '[data-cy="municipioGridContainer"]',
     logradouroInput: '[data-cy="logradouroInput"] input',
     logradouroGridContainer: '[data-cy="logradouroGridContainer"]',
     numeroInput: '[data-cy="numeroInput"] input',
+    numeroHelperText: '[data-cy="numeroHelperText"]',
     numeroGridContainer: '[data-cy="numeroGridContainer"]',
     complementoInput: '[data-cy="complementoInput"] input',
+    complementoHelperText: '[data-cy="complementoHelperText"]',
     complementoGridContainer: '[data-cy="complementoGridContainer"]',
     submitButton: '[data-cy="submitButton"]',
     errorAlert: '[data-cy="errorAlert"]',
@@ -147,10 +152,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
 
     it("deve exibir helper text inicial para CEP", () => {
-      cy.get(selectors.cepInput)
-        .parent()
-        .parent()
-        .find(selectors.cnpjHelperText)
+      cy.get(selectors.cepHelperText)
         .should("be.visible")
         .and("contain.text", "Digite apenas os números");
     });
@@ -170,10 +172,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
 
     it("deve exibir helper text inicial para Estado", () => {
-      cy.get(selectors.estadoInput)
-        .parent()
-        .parent()
-        .find(selectors.cnpjHelperText)
+      cy.get(selectors.estadoHelperText)
         .should("be.visible")
         .and("contain.text", "Digite a sigla do estado (UF)");
     });
@@ -221,10 +220,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
 
     it("deve exibir helper text inicial para Número", () => {
-      cy.get(selectors.numeroInput)
-        .parent()
-        .parent()
-        .find(selectors.cnpjHelperText)
+      cy.get(selectors.numeroHelperText)
         .should("be.visible")
         .and("contain.text", "Aceita número inteiro positivo ou 'S/N'");
     });
@@ -248,10 +244,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     });
 
     it("deve exibir helper text inicial para Complemento", () => {
-      cy.get(selectors.complementoInput)
-        .parent()
-        .parent()
-        .find(selectors.cnpjHelperText)
+      cy.get(selectors.complementoHelperText)
         .should("be.visible")
         .and("contain.text", "Campo opcional");
     });
@@ -1635,11 +1628,9 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
   describe("Estilos e UX", () => {
     it("deve aplicar cor customizada no focus do campo", () => {
-      cy.get(selectors.cnpjInput).focus();
-
-      // Verifica se a borda muda para a cor customizada no focus
-      cy.get(selectors.cnpjInput)
-        .parent()
+      cy.get(selectors.cnpjInputElement).focus();
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiOutlinedInput-root")
         .should("have.class", "Mui-focused")
         .find("fieldset")
         .should("have.css", "border-color");
@@ -1647,8 +1638,9 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
     it("deve aplicar cor de erro quando inválido", () => {
       cy.get(selectors.cnpjInput).type("11111111111111");
-
-      cy.get(selectors.cnpjInput).parent().should("have.class", "Mui-error");
+      cy.get(
+        `${selectors.cnpjInput.replace(" input", "")} .MuiOutlinedInput-root`,
+      ).should("have.class", "Mui-error");
     });
 
     it("deve respeitar maxLength de 18 caracteres", () => {
@@ -1704,11 +1696,10 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
   describe("Interações do teclado", () => {
     it("deve permitir navegação com Tab", () => {
+      // Obtém o input
       cy.get(selectors.cnpjInput).focus();
-      cy.focused()
-        .parent()
-        .parent()
-        .should("have.attr", "data-cy", "cnpjInput");
+      // Verifica se o elemento focado tem o data-cy correto
+      cy.focused().should("have.attr", "data-cy", "cnpjInputElement");
     });
 
     it("deve permitir copiar e colar (Ctrl+C/Ctrl+V)", () => {
@@ -1802,9 +1793,7 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
 
   describe("Acessibilidade", () => {
     it("deve ter label associado ao campo", () => {
-      cy.get(selectors.cnpjInput)
-        .parent()
-        .parent()
+      cy.get(selectors.cnpjGridContainer)
         .find("label")
         .should("exist")
         .and("have.attr", "for");

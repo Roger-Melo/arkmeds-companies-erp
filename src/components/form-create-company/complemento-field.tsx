@@ -36,6 +36,7 @@ export function ComplementoField({
               isLoadingCompanyInfo ? (
                 <Box
                   component="span"
+                  data-cy="complementoHelperText"
                   sx={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -46,7 +47,9 @@ export function ComplementoField({
                   <span>Buscando dados da empresa...</span>
                 </Box>
               ) : (
-                errors.complemento?.message || "Campo opcional"
+                <span data-cy="complementoHelperText">
+                  {errors.complemento?.message || "Campo opcional"}
+                </span>
               )
             }
             slotProps={{

@@ -32,6 +32,7 @@ export function NumeroField({
               isLoadingCompanyInfo ? (
                 <Box
                   component="span"
+                  data-cy="numeroHelperText"
                   sx={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -42,8 +43,10 @@ export function NumeroField({
                   <span>Buscando dados da empresa...</span>
                 </Box>
               ) : (
-                errors.numero?.message ||
-                "Aceita número inteiro positivo ou 'S/N'"
+                <span data-cy="numeroHelperText">
+                  {errors.numero?.message ||
+                    "Aceita número inteiro positivo ou 'S/N'"}
+                </span>
               )
             }
             sx={{

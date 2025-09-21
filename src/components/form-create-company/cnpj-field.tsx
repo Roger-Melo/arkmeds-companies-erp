@@ -43,6 +43,7 @@ export function CNPJField({
             slotProps={{
               htmlInput: {
                 maxLength: 18, // 14 dígitos + 4 caracteres de formatação
+                "data-cy": "cnpjInputElement",
               },
             }}
             sx={{

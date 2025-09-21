@@ -46,6 +46,7 @@ export function EstadoField({
               isLoadingCompanyInfo ? (
                 <Box
                   component="span"
+                  data-cy="estadoHelperText"
                   sx={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -56,7 +57,9 @@ export function EstadoField({
                   <span>Buscando dados da empresa...</span>
                 </Box>
               ) : (
-                errors.estado?.message || "Digite a sigla do estado (UF)"
+                <span data-cy="estadoHelperText">
+                  {errors.estado?.message || "Digite a sigla do estado (UF)"}
+                </span>
               )
             }
             slotProps={{
