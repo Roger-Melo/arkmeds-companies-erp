@@ -54,6 +54,32 @@ describe("Integração com API de CNPJ", () => {
     });
   });
 
+  describe("Indicadores de loading", () => {
+    formFields.forEach((field) => {
+      it(`deve mostrar loading no campo ${field.name} durante busca`, () => {
+        cy.get(selectors.cnpjInput).type(field.cnpjToTest);
+
+        // Verifica loading text
+        cy.get(field.containerSelector)
+          .find(".MuiFormHelperText-root")
+          .should("contain.text", "Buscando dados da empresa...");
+
+        // Verifica spinner
+        cy.get(field.containerSelector)
+          .find(".MuiCircularProgress-root")
+          .should("exist");
+
+        // Aguarda loading terminar
+        cy.get(field.selector, { timeout: 10000 }).should("not.be.disabled");
+
+        // Verifica que loading sumiu
+        cy.get(field.containerSelector)
+          .find(".MuiCircularProgress-root")
+          .should("not.exist");
+      });
+    });
+  });
+
   it("deve mostrar indicador de loading durante busca de dados reais", () => {
     cy.get(selectors.cnpjInput).type(cnpjTeste.numero);
 
@@ -185,30 +211,6 @@ describe("Integração com API de CNPJ", () => {
       .should("have.value", "Digitado Manualmente");
   });
 
-  it("deve mostrar loading no campo Nome Fantasia durante busca", () => {
-    cy.get(selectors.cnpjInput).type(cnpjComNomeFantasia.numero);
-
-    // Verifica se o loading aparece
-    cy.get(selectors.nomeFantasiaGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    // Verifica se o CircularProgress está visível
-    cy.get(selectors.nomeFantasiaGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.nomeFantasiaInput, { timeout: 10000 }).should(
-      "not.be.disabled",
-    );
-
-    // Verifica que o loading sumiu
-    cy.get(selectors.nomeFantasiaGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
-  });
-
   it("deve desabilitar Nome Fantasia durante busca e habilitar depois", () => {
     cy.get(selectors.nomeFantasiaInput).should("not.be.disabled");
 
@@ -242,28 +244,6 @@ describe("Integração com API de CNPJ", () => {
     );
   });
 
-  it("deve mostrar loading no campo CEP durante busca", () => {
-    const cnpjComCEP = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComCEP);
-
-    // Verifica se o loading aparece no CEP
-    cy.get(selectors.cepGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    cy.get(selectors.cepGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.cepInput, { timeout: 10000 }).should("not.be.disabled");
-
-    cy.get(selectors.cepGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
-  });
-
   it("deve desabilitar CEP durante busca e habilitar depois", () => {
     const cnpjComCEP = "34028316000103";
     cy.get(selectors.cepInput).should("not.be.disabled");
@@ -280,28 +260,6 @@ describe("Integração com API de CNPJ", () => {
       .and("not.be.disabled");
     cy.get(selectors.cepInput).clear().type("04567000");
     cy.get(selectors.cepInput).should("have.value", "04567-000");
-  });
-
-  it("deve mostrar loading no campo Estado durante busca", () => {
-    const cnpjComEstado = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComEstado);
-
-    // Verifica se o loading aparece no Estado
-    cy.get(selectors.estadoGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    cy.get(selectors.estadoGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.estadoInput, { timeout: 10000 }).should("not.be.disabled");
-
-    cy.get(selectors.estadoGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
   });
 
   it("deve desabilitar Estado durante busca e habilitar depois", () => {
@@ -326,30 +284,6 @@ describe("Integração com API de CNPJ", () => {
     cy.get(selectors.estadoInput).should("have.value", "RJ");
   });
 
-  it("deve mostrar loading no campo Município durante busca", () => {
-    const cnpjComMunicipio = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComMunicipio);
-
-    // Verifica se o loading aparece no Município
-    cy.get(selectors.municipioGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    cy.get(selectors.municipioGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.municipioInput, { timeout: 10000 }).should(
-      "not.be.disabled",
-    );
-
-    cy.get(selectors.municipioGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
-  });
-
   it("deve desabilitar Município durante busca e habilitar depois", () => {
     const cnpjComMunicipio = "34028316000103";
 
@@ -372,30 +306,6 @@ describe("Integração com API de CNPJ", () => {
 
     cy.get(selectors.municipioInput).clear().type("Rio de Janeiro");
     cy.get(selectors.municipioInput).should("have.value", "Rio de Janeiro");
-  });
-
-  it("deve mostrar loading no campo Logradouro durante busca", () => {
-    const cnpjComLogradouro = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComLogradouro);
-
-    // Verifica se o loading aparece no Logradouro
-    cy.get(selectors.logradouroGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    cy.get(selectors.logradouroGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.logradouroInput, { timeout: 10000 }).should(
-      "not.be.disabled",
-    );
-
-    cy.get(selectors.logradouroGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
   });
 
   it("deve desabilitar Logradouro durante busca e habilitar depois", () => {
@@ -425,28 +335,6 @@ describe("Integração com API de CNPJ", () => {
     );
   });
 
-  it("deve mostrar loading no campo Número durante busca", () => {
-    const cnpjComNumero = "34028316000103";
-
-    cy.get(selectors.cnpjInput).type(cnpjComNumero);
-
-    // Verifica se o loading aparece no Número
-    cy.get(selectors.numeroGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    cy.get(selectors.numeroGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.numeroInput, { timeout: 10000 }).should("not.be.disabled");
-
-    cy.get(selectors.numeroGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
-  });
-
   it("deve desabilitar Número durante busca e habilitar depois", () => {
     const cnpjComNumero = "34028316000103";
 
@@ -467,28 +355,6 @@ describe("Integração com API de CNPJ", () => {
 
     cy.get(selectors.numeroInput).clear().type("S/N");
     cy.get(selectors.numeroInput).should("have.value", "S/N");
-  });
-
-  it("deve mostrar loading no campo Complemento durante busca", () => {
-    cy.get(selectors.cnpjInput).type(cnpjComComplemento.numero);
-
-    // Verifica se o loading aparece no Complemento
-    cy.get(selectors.complementoGridContainer)
-      .find(".MuiFormHelperText-root")
-      .should("contain.text", "Buscando dados da empresa...");
-
-    cy.get(selectors.complementoGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("exist");
-
-    // Aguarda o loading terminar
-    cy.get(selectors.complementoInput, { timeout: 10000 }).should(
-      "not.be.disabled",
-    );
-
-    cy.get(selectors.complementoGridContainer)
-      .find(".MuiCircularProgress-root")
-      .should("not.exist");
   });
 
   it("deve desabilitar Complemento durante busca e habilitar depois", () => {
