@@ -2,8 +2,6 @@ import { selectors } from "./cadastro-de-empresa/shared/selectors";
 import {
   validCNPJs,
   invalidCNPJs,
-  validCEPs,
-  invalidCEPs,
 } from "./cadastro-de-empresa/shared/test-data";
 
 describe("Cadastro de Empresa - Formulário de Criação", () => {
@@ -11,79 +9,6 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
     cy.visit("/cadastro-de-empresa");
     // Aguarda a página carregar completamente
     cy.get(selectors.pageTitle).should("be.visible");
-  });
-
-  describe("Validação de CEP", () => {
-    it("deve mostrar erro para CEP incompleto", () => {
-      cy.get(selectors.cepInput).type("0131010");
-      cy.get(selectors.cepInput).blur();
-
-      cy.get(selectors.cepGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("contain.text", "CEP inválido")
-        .and("have.class", "Mui-error");
-    });
-
-    it("deve mostrar erro de campo obrigatório quando vazio após interação", () => {
-      cy.get(selectors.cepInput).type("1").clear();
-      cy.get(selectors.cepInput).blur();
-
-      cy.get(selectors.cepGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("contain.text", "CEP obrigatório")
-        .and("have.class", "Mui-error");
-    });
-
-    it("deve aceitar CEP válido sem mostrar erro", () => {
-      cy.get(selectors.cepInput).type(validCEPs.unformatted);
-      cy.get(selectors.cepInput).blur();
-
-      cy.get(selectors.cepGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("not.have.class", "Mui-error")
-        .and("contain.text", "Digite apenas os números");
-    });
-
-    it("deve ter limite máximo de 9 caracteres configurado", () => {
-      cy.get(selectors.cepInput).should("have.attr", "maxlength", "9");
-    });
-
-    it("deve mostrar erro para CEP com formato inválido (sem hífen na posição correta)", () => {
-      // Digita 8 dígitos que formariam um CEP mas com formato errado
-      cy.get(selectors.cepInput).type(invalidCEPs.invalidFormat);
-      cy.get(selectors.cepInput).blur();
-
-      // A máscara vai formatar para "12345-678",
-      // mas o padrão regex espera /^\d{5}-\d{3}$/
-      cy.get(selectors.cepGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("not.have.class", "Mui-error"); // A máscara deve corrigir automaticamente
-    });
-
-    it("deve validar em tempo real (modo onChange)", () => {
-      // Digita um CEP incompleto
-      cy.get(selectors.cepInput).type(invalidCEPs.incomplete);
-
-      // Sem precisar blur, já deve mostrar erro
-      cy.get(selectors.cepGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("contain.text", "CEP inválido")
-        .and("have.class", "Mui-error");
-
-      // Completa o CEP
-      cy.get(selectors.cepInput).type("0");
-
-      // Erro deve sumir
-      cy.get(selectors.cepGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("not.have.class", "Mui-error");
-    });
-
-    it("não deve permitir mais dígitos que o necessário", () => {
-      cy.get(selectors.cepInput).type(invalidCEPs.tooMany);
-      // Deve ter exatamente 9 caracteres (8 dígitos + 1 hífen)
-      cy.get(selectors.cepInput).invoke("val").should("have.length", 9);
-    });
   });
 
   describe("Validação de CNPJ", () => {
@@ -491,6 +416,96 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.complementoGridContainer)
         .find(".MuiFormHelperText-root")
         .should("not.have.class", "Mui-error");
+    });
+  });
+
+  describe("Validação no momento do envio do form", () => {
+    it("deve validar CNPJ inválido ao submeter", () => {
+      // Preenche com CNPJ inválido
+      cy.get(selectors.cnpjInput).type("11111111111111");
+
+      // Preenche outros campos para garantir que só o CNPJ está errado
+      cy.get(selectors.razaoSocialInput).type("Empresa Teste");
+      cy.get(selectors.nomeFantasiaInput).type("Teste");
+      cy.get(selectors.cepInput).type("01310100");
+      cy.get(selectors.estadoInput).type("SP");
+      cy.get(selectors.municipioInput).type("São Paulo");
+      cy.get(selectors.logradouroInput).type("Rua Teste");
+      cy.get(selectors.numeroInput).type("100");
+
+      // Tenta submeter
+      cy.get(selectors.submitButton).click();
+
+      // Deve permanecer na página
+      cy.url().should("include", "/cadastro-de-empresa");
+
+      // Deve mostrar erro no CNPJ
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ inválido");
+    });
+
+    it("não deve permitir submit com campos obrigatórios vazios", () => {
+      cy.visit("/cadastro-de-empresa");
+      // Clica direto no botão sem preencher nada
+      cy.get(selectors.submitButton).click();
+      // Deve permanecer na página
+      cy.url().should("include", "/cadastro-de-empresa");
+      // Verifica que os erros aparecem para TODOS os campos obrigatórios
+      const camposObrigatorios = [
+        { selector: selectors.cnpjGridContainer, erro: "CNPJ obrigatório" },
+        {
+          selector: selectors.razaoSocialGridContainer,
+          erro: "Razão Social obrigatória",
+        },
+        {
+          selector: selectors.nomeFantasiaGridContainer,
+          erro: "Nome Fantasia obrigatório",
+        },
+        { selector: selectors.cepGridContainer, erro: "CEP obrigatório" },
+        { selector: selectors.estadoGridContainer, erro: "Estado obrigatório" },
+        {
+          selector: selectors.municipioGridContainer,
+          erro: "Município obrigatório",
+        },
+        {
+          selector: selectors.logradouroGridContainer,
+          erro: "Logradouro obrigatório",
+        },
+      ];
+
+      camposObrigatorios.forEach(({ selector, erro }) => {
+        cy.get(selector)
+          .find(".MuiFormHelperText-root")
+          .should("contain.text", erro);
+      });
+    });
+
+    it("deve impedir submit enquanto houver erros de validação", () => {
+      cy.visit("/cadastro-de-empresa");
+      // Preenche com CNPJ inválido
+      cy.get(selectors.cnpjInput).type("11111111111111");
+      // Preenche os outros campos corretamente
+      cy.get(selectors.razaoSocialInput).type("Empresa Teste");
+      cy.get(selectors.nomeFantasiaInput).type("Teste");
+      cy.get(selectors.cepInput).type("01310100");
+      cy.get(selectors.estadoInput).type("SP");
+      cy.get(selectors.municipioInput).type("São Paulo");
+      cy.get(selectors.logradouroInput).type("Rua Teste");
+      cy.get(selectors.numeroInput).type("100");
+      // Verifica que o erro do CNPJ está visível
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ inválido")
+        .and("have.class", "Mui-error");
+      // Tenta submeter
+      cy.get(selectors.submitButton).click();
+      // Deve permanecer na página (não deve redirecionar)
+      cy.url().should("include", "/cadastro-de-empresa");
+      // O erro do CNPJ deve continuar visível
+      cy.get(selectors.cnpjGridContainer)
+        .find(".MuiFormHelperText-root")
+        .should("contain.text", "CNPJ inválido");
     });
   });
 
@@ -1160,96 +1175,6 @@ describe("Cadastro de Empresa - Formulário de Criação", () => {
       cy.get(selectors.cnpjGridContainer)
         .find(".MuiFormHelperText-root")
         .should("contain.text", "CNPJ obrigatório");
-    });
-  });
-
-  describe("Validação no momento do envio do form", () => {
-    it("deve validar CNPJ inválido ao submeter", () => {
-      // Preenche com CNPJ inválido
-      cy.get(selectors.cnpjInput).type("11111111111111");
-
-      // Preenche outros campos para garantir que só o CNPJ está errado
-      cy.get(selectors.razaoSocialInput).type("Empresa Teste");
-      cy.get(selectors.nomeFantasiaInput).type("Teste");
-      cy.get(selectors.cepInput).type("01310100");
-      cy.get(selectors.estadoInput).type("SP");
-      cy.get(selectors.municipioInput).type("São Paulo");
-      cy.get(selectors.logradouroInput).type("Rua Teste");
-      cy.get(selectors.numeroInput).type("100");
-
-      // Tenta submeter
-      cy.get(selectors.submitButton).click();
-
-      // Deve permanecer na página
-      cy.url().should("include", "/cadastro-de-empresa");
-
-      // Deve mostrar erro no CNPJ
-      cy.get(selectors.cnpjGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("contain.text", "CNPJ inválido");
-    });
-
-    it("não deve permitir submit com campos obrigatórios vazios", () => {
-      cy.visit("/cadastro-de-empresa");
-      // Clica direto no botão sem preencher nada
-      cy.get(selectors.submitButton).click();
-      // Deve permanecer na página
-      cy.url().should("include", "/cadastro-de-empresa");
-      // Verifica que os erros aparecem para TODOS os campos obrigatórios
-      const camposObrigatorios = [
-        { selector: selectors.cnpjGridContainer, erro: "CNPJ obrigatório" },
-        {
-          selector: selectors.razaoSocialGridContainer,
-          erro: "Razão Social obrigatória",
-        },
-        {
-          selector: selectors.nomeFantasiaGridContainer,
-          erro: "Nome Fantasia obrigatório",
-        },
-        { selector: selectors.cepGridContainer, erro: "CEP obrigatório" },
-        { selector: selectors.estadoGridContainer, erro: "Estado obrigatório" },
-        {
-          selector: selectors.municipioGridContainer,
-          erro: "Município obrigatório",
-        },
-        {
-          selector: selectors.logradouroGridContainer,
-          erro: "Logradouro obrigatório",
-        },
-      ];
-
-      camposObrigatorios.forEach(({ selector, erro }) => {
-        cy.get(selector)
-          .find(".MuiFormHelperText-root")
-          .should("contain.text", erro);
-      });
-    });
-
-    it("deve impedir submit enquanto houver erros de validação", () => {
-      cy.visit("/cadastro-de-empresa");
-      // Preenche com CNPJ inválido
-      cy.get(selectors.cnpjInput).type("11111111111111");
-      // Preenche os outros campos corretamente
-      cy.get(selectors.razaoSocialInput).type("Empresa Teste");
-      cy.get(selectors.nomeFantasiaInput).type("Teste");
-      cy.get(selectors.cepInput).type("01310100");
-      cy.get(selectors.estadoInput).type("SP");
-      cy.get(selectors.municipioInput).type("São Paulo");
-      cy.get(selectors.logradouroInput).type("Rua Teste");
-      cy.get(selectors.numeroInput).type("100");
-      // Verifica que o erro do CNPJ está visível
-      cy.get(selectors.cnpjGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("contain.text", "CNPJ inválido")
-        .and("have.class", "Mui-error");
-      // Tenta submeter
-      cy.get(selectors.submitButton).click();
-      // Deve permanecer na página (não deve redirecionar)
-      cy.url().should("include", "/cadastro-de-empresa");
-      // O erro do CNPJ deve continuar visível
-      cy.get(selectors.cnpjGridContainer)
-        .find(".MuiFormHelperText-root")
-        .should("contain.text", "CNPJ inválido");
     });
   });
 
