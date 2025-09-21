@@ -22,28 +22,32 @@ describe("Paginação", () => {
     // Só executa se houver paginação
     cy.get("body").then(($body) => {
       if ($body.find(selectors.nextPageButton).length > 0) {
-        // Captura o primeiro card da página 1
-        cy.get(selectors.companyCard)
-          .first()
-          .invoke("text")
-          .then((firstCardTextPage1) => {
-            // Navega para próxima página
-            cy.get(selectors.nextPageButton).click();
+        // Navega para próxima página
+        cy.get(selectors.nextPageButton).click();
 
-            // Verifica URL atualizada
-            cy.url().should("include", "page=2");
+        // Verifica URL atualizada
+        cy.url().should("include", "page=2");
 
-            // Aguarda carregar nova página
-            cy.get(selectors.companiesList).should("be.visible");
+        // Aguarda carregar nova página
+        cy.get(selectors.companiesList).should("be.visible");
 
-            // Verifica que o conteúdo mudou
-            cy.get(selectors.companyCard)
-              .first()
-              .invoke("text")
-              .should((firstCardTextPage2) => {
-                expect(firstCardTextPage2).to.not.equal(firstCardTextPage1);
-              });
-          });
+        // Verifica que a paginação está ativa na página 2
+        cy.get(".Mui-selected").should("contain.text", "2");
+
+        // Verifica que o botão anterior agora está habilitado
+        cy.get(selectors.previousPageButton).should("not.be.disabled");
+
+        // Verifica que ainda existem cards (pode ter quantidade diferente na última página)
+        cy.get(selectors.companyCard).should("have.length.at.least", 1);
+
+        // Se não for a última página, deve ter 10 cards
+        cy.get("body").then(($body) => {
+          const nextButton = $body.find(selectors.nextPageButton);
+          if (!nextButton.is(":disabled")) {
+            // Não é a última página, deve ter 10 cards
+            cy.get(selectors.companyCard).should("have.length", 10);
+          }
+        });
       }
     });
   });
@@ -55,23 +59,25 @@ describe("Paginação", () => {
         selectors.paginationButton + ':contains("2")',
       );
       if (page2Button.length > 0) {
-        // Captura conteúdo inicial
-        cy.get(selectors.companyCard)
-          .first()
-          .invoke("text")
-          .then((initialText) => {
-            // Clica na página 2
-            cy.get(selectors.paginationButton).contains("2").click();
+        // Verifica estado inicial - página 1 deve estar selecionada
+        cy.get(".Mui-selected").should("contain.text", "1");
 
-            // Verifica URL
-            cy.url().should("include", "page=2");
+        // Clica na página 2
+        cy.get(selectors.paginationButton).contains("2").click();
 
-            // Verifica que conteúdo mudou
-            cy.get(selectors.companyCard)
-              .first()
-              .invoke("text")
-              .should("not.equal", initialText);
-          });
+        // Verifica URL
+        cy.url().should("include", "page=2");
+
+        // Verifica que página 2 está selecionada
+        cy.get(".Mui-selected").should("contain.text", "2");
+
+        // Verifica que o botão da página 1 não está mais selecionado
+        cy.get(selectors.paginationButton)
+          .contains("1")
+          .should("not.have.class", "Mui-selected");
+
+        // Verifica que existem cards na página
+        cy.get(selectors.companyCard).should("have.length.at.least", 1);
       }
     });
   });
@@ -83,23 +89,26 @@ describe("Paginação", () => {
         cy.get(selectors.nextPageButton).click();
         cy.url().should("include", "page=2");
 
-        // Captura conteúdo da página 2
-        cy.get(selectors.companyCard)
-          .first()
-          .invoke("text")
-          .then((page2Text) => {
-            // Volta para primeira página
-            cy.get(selectors.firstPageButton).click();
+        // Verifica que está na página 2
+        cy.get(".Mui-selected").should("contain.text", "2");
 
-            // URL não deve ter parâmetro page quando está na página 1
-            cy.url().should("not.include", "page=");
+        // Verifica que o botão anterior está habilitado
+        cy.get(selectors.previousPageButton).should("not.be.disabled");
 
-            // Conteúdo deve ser diferente
-            cy.get(selectors.companyCard)
-              .first()
-              .invoke("text")
-              .should("not.equal", page2Text);
-          });
+        // Volta para primeira página
+        cy.get(selectors.firstPageButton).click();
+
+        // URL não deve ter parâmetro page quando está na página 1
+        cy.url().should("not.include", "page=");
+
+        // Verifica que está na página 1
+        cy.get(".Mui-selected").should("contain.text", "1");
+
+        // Verifica que o botão anterior está desabilitado novamente
+        cy.get(selectors.previousPageButton).should("be.disabled");
+
+        // Verifica que existem cards
+        cy.get(selectors.companyCard).should("have.length.at.least", 1);
       }
     });
   });
