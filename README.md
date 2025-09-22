@@ -153,12 +153,6 @@ yarn test:e2e
 npx cypress run
 ```
 
-#### Suítes de Teste E2E Disponíveis:
-
-- **header.cy.ts** - Testes do componente Header e navegação
-- **homepage.cy.ts** - Testes da listagem de empresas e modal de receita
-- **cadastro-de-empresa.cy.ts** - Testes completos do formulário de cadastro
-
 ### Testes Unitários com Vitest
 
 1. **Executar todos os testes unitários:**
@@ -168,14 +162,6 @@ npm run test:unit
 # ou
 yarn test:unit
 ```
-
-#### Suítes de Teste Unitário Disponíveis:
-
-- **apply-cep-mask.test.ts** - Testes da máscara de CEP
-- **apply-cnpj-mask.test.ts** - Testes da máscara de CNPJ
-- **format-cnpj.test.ts** - Testes de formatação de CNPJ
-- **format-to-brl.test.ts** - Testes de formatação de moeda
-- **get-paginated-companies.test.ts** - Testes de paginação
 
 ## 🔌 API Endpoints
 
