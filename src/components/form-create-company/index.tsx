@@ -1,12 +1,12 @@
 "use client";
 
 import Box from "@mui/material/Box";
-import { FormFooter } from "./form-create-company/form-footer";
+import { FormFooter } from "./form-footer";
 import { useCompanyForm } from "@/hooks/use-company-form";
 import { useCNPJAutoFill } from "@/hooks/use-cnpj-autofill";
 import { useFormSubmission } from "@/hooks/use-form-submission";
-import { CompanyDataSection } from "./form-create-company/sections/company-data-section";
-import { CompanyAddressSection } from "./form-create-company/sections/company-address-section";
+import { CompanyDataSection } from "./sections/company-data-section";
+import { CompanyAddressSection } from "./sections/company-address-section";
 
 export function FormCreateCompany() {
   const { isSubmitting, error, setError, onSubmit } = useFormSubmission();

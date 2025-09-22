@@ -1,11 +1,11 @@
 import Grid from "@mui/material/Grid";
 import { FormHeading } from "@/components/form-create-company/form-heading";
-import { CEPField } from "@/components/form-create-company/cep-field";
-import { EstadoField } from "@/components/form-create-company/estado-field";
-import { MunicipioField } from "@/components/form-create-company/municipio-field";
-import { LogradouroField } from "@/components/form-create-company/logradouro-field";
-import { NumeroField } from "@/components/form-create-company/numero-field";
-import { ComplementoField } from "@/components/form-create-company/complemento-field";
+import { CEPField } from "@/components/form-create-company/fields/cep-field";
+import { EstadoField } from "@/components/form-create-company/fields/estado-field";
+import { MunicipioField } from "@/components/form-create-company/fields/municipio-field";
+import { LogradouroField } from "@/components/form-create-company/fields/logradouro-field";
+import { NumeroField } from "@/components/form-create-company/fields/numero-field";
+import { ComplementoField } from "@/components/form-create-company/fields/complemento-field";
 import { applyCEPMask } from "@/utils/apply-cep-mask";
 import type {
   CommonCreateCompanyFieldProps,

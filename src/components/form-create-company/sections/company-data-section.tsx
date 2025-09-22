@@ -1,6 +1,6 @@
-import { CNPJField } from "@/components/form-create-company/cnpj-field";
-import { RazaoSocialField } from "@/components/form-create-company/razao-social-field";
-import { NomeFantasiaField } from "@/components/form-create-company/nome-fantasia-field";
+import { CNPJField } from "@/components/form-create-company/fields/cnpj-field";
+import { RazaoSocialField } from "@/components/form-create-company/fields/razao-social-field";
+import { NomeFantasiaField } from "@/components/form-create-company/fields/nome-fantasia-field";
 import { FormHeading } from "@/components/form-create-company/form-heading";
 import Grid from "@mui/material/Grid";
 import type {
