@@ -55,15 +55,18 @@ describe("Paginação", () => {
   it("deve navegar para página específica ao clicar no número", () => {
     cy.get("body").then(($body) => {
       // Verifica se existe botão da página 2
-      const page2Button = $body.find(
-        selectors.paginationButton + ':contains("2")',
-      );
+      const page2Button = Array.from(
+        $body.find(selectors.paginationButton),
+      ).filter((el) => el.textContent?.trim() === "2");
+
       if (page2Button.length > 0) {
         // Verifica estado inicial - página 1 deve estar selecionada
         cy.get(".Mui-selected").should("contain.text", "1");
 
         // Clica na página 2
-        cy.get(selectors.paginationButton).contains("2").click();
+        cy.get(selectors.paginationButton)
+          .filter((_, el) => el.textContent?.trim() === "2")
+          .click();
 
         // Verifica URL
         cy.url().should("include", "page=2");
@@ -163,11 +166,12 @@ describe("Paginação", () => {
       // Navega para uma página intermediária se houver
       cy.get("body").then(($body) => {
         // Procura por um botão de página 3 ou superior para garantir que há páginas suficientes
-        const page3Button = $body.find(
-          selectors.paginationButton + ':contains("3")',
-        );
+        const page3Button = Array.from(
+          $body.find(selectors.paginationButton),
+        ).filter((el) => el.textContent?.trim() === "3");
+
         if (page3Button.length > 0) {
-          cy.wrap(page3Button).click();
+          cy.wrap(page3Button[0]).click();
           cy.url().should("include", "page=3");
         }
       });
@@ -276,11 +280,12 @@ describe("Paginação", () => {
       cy.visit("/");
       // Navega para página 5 se disponível
       cy.get("body").then(($body) => {
-        const page5Button = $body.find(
-          selectors.paginationButton + ':contains("5")',
-        );
+        const page5Button = Array.from(
+          $body.find(selectors.paginationButton),
+        ).filter((el) => el.textContent?.trim() === "5");
+
         if (page5Button.length > 0) {
-          cy.wrap(page5Button).click();
+          cy.wrap(page5Button[0]).click();
           // Em desktop: deve ver páginas 4, [5], 6
           cy.get(selectors.paginationButton).contains("4").should("be.visible");
           cy.get(selectors.paginationButton).contains("6").should("be.visible");
