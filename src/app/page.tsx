@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: HomeProps) {
   });
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }} data-cy="homepageContainer">
       <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
         {/* Seção de título e busca */}
         <Box
@@ -54,6 +54,7 @@ export default async function Home({ searchParams }: HomeProps) {
           }}
         >
           <Typography
+            data-cy="pageHeading"
             variant="h4"
             component="h1"
             sx={{

@@ -6,6 +6,7 @@ import Box from "@mui/material/Box";
 export function SearchBar() {
   return (
     <Box
+      data-cy="searchBar"
       sx={{
         width: "100%",
         maxWidth: { xs: "100%", sm: "500px", md: "600px" },
@@ -13,6 +14,7 @@ export function SearchBar() {
       }}
     >
       <TextField
+        data-cy="searchBarInput"
         fullWidth
         variant="outlined"
         placeholder="Buscar por nome ou CNPJ da empresa"
@@ -20,7 +22,7 @@ export function SearchBar() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: "#244C5A" }} />
+                <SearchIcon data-cy="searchBarIcon" sx={{ color: "#244C5A" }} />
               </InputAdornment>
             ),
           },

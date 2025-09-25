@@ -45,4 +45,9 @@ export const selectors = {
   nomeFantasia: '[data-cy="nome-fantasia"]',
   cnpj: '[data-cy="cnpj"]',
   municipioEstado: '[data-cy="municipio-estado"]',
+  searchBar: '[data-cy="searchBar"]',
+  searchBarInput: '[data-cy="searchBarInput"]',
+  searchBarIcon: '[data-cy="searchBarIcon"]',
+  pageHeading: '[data-cy="pageHeading"]',
+  homepageContainer: '[data-cy="homepageContainer"]',
 };
