@@ -286,15 +286,29 @@ describe("Paginação", () => {
 
         if (page5Button.length > 0) {
           cy.wrap(page5Button[0]).click();
+
           // Em desktop: deve ver páginas 4, [5], 6
-          cy.get(selectors.paginationButton).contains("4").should("be.visible");
-          cy.get(selectors.paginationButton).contains("6").should("be.visible");
+          // Verifica apenas botões de página (não navegação)
+          cy.get(".MuiPaginationItem-page")
+            .filter((_, el) => el.textContent?.trim() === "4")
+            .should("be.visible");
+          cy.get(".MuiPaginationItem-page")
+            .filter((_, el) => el.textContent?.trim() === "6")
+            .should("be.visible");
+
           // Agora muda para mobile sem recarregar
           cy.viewport(375, 667);
           cy.wait(500); // Aguarda re-renderização
+
           // Em mobile: NÃO deve ver páginas 4 e 6 adjacentes
-          cy.get(selectors.paginationButton).contains("4").should("not.exist");
-          cy.get(selectors.paginationButton).contains("6").should("not.exist");
+          // Verifica apenas entre os botões de página (ignora navegação)
+          cy.get(".MuiPaginationItem-page")
+            .filter((_, el) => el.textContent?.trim() === "4")
+            .should("not.exist");
+          cy.get(".MuiPaginationItem-page")
+            .filter((_, el) => el.textContent?.trim() === "6")
+            .should("not.exist");
+
           // Mas ainda deve ver a página atual (5)
           cy.get(".Mui-selected").should("contain.text", "5");
         } else {
