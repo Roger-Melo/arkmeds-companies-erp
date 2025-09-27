@@ -6,6 +6,7 @@ import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { companiesSchema } from "@/types";
+import { filterCompanies } from "@/utils/filter-companies";
 
 const options = {
   headers: {
@@ -20,26 +21,38 @@ const companiesApiEndpoint =
 const perPage = 10;
 
 type HomeProps = {
-  searchParams: { page?: string };
+  searchParams: { page?: string; search?: string };
 };
 
 export default async function Home({ searchParams }: HomeProps) {
   const response = await fetch(companiesApiEndpoint, options);
   const companies = await response.json();
   const validatedCompanies = companiesSchema.safeParse(companies);
-  const currentPage = parseInt((await searchParams).page || "1");
+  const params = await searchParams;
+  const currentPage = parseInt(params.page || "1");
+  const searchTerm = params.search || "";
 
   if (!validatedCompanies.success) {
     // lança erro que vai cair no error.tsx
     throw new Error("Lançou erro de schema!");
   }
 
-  const totalPages = Math.ceil(validatedCompanies.data.length / perPage);
+  // Reverte a lista primeiro
+  const reversedCompanies = validatedCompanies.data.reverse();
+  // Aplica o filtro de busca
+  const filteredCompanies = filterCompanies({
+    companies: reversedCompanies,
+    searchTerm,
+  });
+
+  const totalPages = Math.ceil(filteredCompanies.length / perPage);
   const paginatedCompanies = getPaginatedCompanies({
     currentPage,
     perPage,
-    validatedCompanies: validatedCompanies.data.reverse(),
+    validatedCompanies: filteredCompanies,
   });
+
+  const companiesFound = filteredCompanies.length > 0;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }} data-cy="homepageContainer">
@@ -70,14 +83,44 @@ export default async function Home({ searchParams }: HomeProps) {
           <SearchBar />
         </Box>
 
-        <CompaniesList companies={paginatedCompanies} />
+        {companiesFound ? (
+          <CompaniesList companies={paginatedCompanies} />
+        ) : (
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 8,
+              px: 2,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#666",
+                mb: 2,
+              }}
+            >
+              Nenhuma empresa encontrada
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#999",
+              }}
+            >
+              Tente buscar por outro nome ou CNPJ
+            </Typography>
+          </Box>
+        )}
 
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <PaginationControls
-            totalPages={totalPages}
-            currentPage={currentPage}
-          />
-        </Box>
+        {companiesFound && (
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <PaginationControls
+              totalPages={totalPages}
+              currentPage={currentPage}
+            />
+          </Box>
+        )}
       </Box>
     </Container>
   );
