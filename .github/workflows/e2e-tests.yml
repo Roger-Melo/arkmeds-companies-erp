@@ -36,18 +36,11 @@ jobs:
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
-          config: baseUrl=${{ steps.vercel_preview_url.outputs.preview_url }}
-        env:
-          CYPRESS_BASE_URL: ${{ steps.vercel_preview_url.outputs.preview_url }}
-
-      - name: Run Cypress tests
-        uses: cypress-io/github-action@v6
-        with:
-          config: baseUrl=${{ steps.vercel_preview_url.outputs.preview_url }}
+          config: baseUrl=https://${{ steps.vercel_preview_url.outputs.preview_url }}
           browser: chrome
           headed: false
         env:
-          CYPRESS_BASE_URL: ${{ steps.vercel_preview_url.outputs.preview_url }}
+          CYPRESS_BASE_URL: https://${{ steps.vercel_preview_url.outputs.preview_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Cypress screenshots
