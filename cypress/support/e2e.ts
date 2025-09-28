@@ -23,11 +23,12 @@ Cypress.on("window:before:load", (win) => {
       const [url, config = {}] = args;
 
       // Adiciona o header de autenticação
-      const bypassSecret = Cypress.env("VERCEL_BYPASS");
+      // Corrigido: usando VERCEL_PROTECTION_BYPASS em vez de VERCEL_BYPASS
+      const bypassSecret = Cypress.env("VERCEL_PROTECTION_BYPASS");
       if (bypassSecret) {
         config.headers = {
           ...config.headers,
-          "x-vercel-automation-bypass-secret": bypassSecret,
+          "x-vercel-protection-bypass": bypassSecret,
         };
       }
 
@@ -38,12 +39,17 @@ Cypress.on("window:before:load", (win) => {
 
 // Adiciona o header também para requisições diretas do Cypress
 beforeEach(() => {
-  const bypassSecret = Cypress.env("VERCEL_BYPASS");
+  // Corrigido: usando VERCEL_PROTECTION_BYPASS
+  const bypassSecret = Cypress.env("VERCEL_PROTECTION_BYPASS");
 
   if (bypassSecret) {
     // Intercepta TODAS as requisições para adicionar o header
     cy.intercept("**/*", (req) => {
-      req.headers["x-vercel-automation-bypass-secret"] = bypassSecret;
+      // Corrigido: usando o header correto do Vercel
+      req.headers["x-vercel-protection-bypass"] = bypassSecret;
     });
   }
+
+  // Log para debug (pode remover depois de funcionar)
+  cy.log("Vercel Bypass Secret configurado:", !!bypassSecret);
 });
