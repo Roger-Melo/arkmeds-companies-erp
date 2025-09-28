@@ -14,4 +14,14 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import "./commands";
+
+beforeEach(() => {
+  const bypassSecret = Cypress.env("VERCEL_BYPASS");
+
+  if (bypassSecret) {
+    cy.intercept("**/*", (req) => {
+      req.headers["x-vercel-automation-bypass-secret"] = bypassSecret;
+    });
+  }
+});
