@@ -74,8 +74,13 @@ describe("Modal de Receita Atual (CurrentRevenueDialog)", () => {
         cy.get(selectors.revenueDialogButton).click();
       });
 
-    // Clica no backdrop
-    cy.get(".MuiBackdrop-root").click({ force: true });
+    // Aguarda o modal estar completamente aberto
+    cy.get(selectors.revenueDialog).should("be.visible");
+
+    // Clica em coordenadas específicas fora do modal
+    // Isso simula melhor o comportamento do usuário
+    cy.get("body").click(10, 10);
+
     cy.get(selectors.revenueDialog).should("not.exist");
   });
 

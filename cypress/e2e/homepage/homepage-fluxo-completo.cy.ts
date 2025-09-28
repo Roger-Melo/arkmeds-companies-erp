@@ -16,8 +16,22 @@ describe("Fluxo completo: Listagem → Paginação → Modal", () => {
     cy.get("body").then(($body) => {
       if ($body.find(selectors.nextPageButton).length > 0) {
         cy.get(selectors.nextPageButton).click();
+
+        // Verifica que algum indicador de loading aparece
+        cy.get("body").should(($body) => {
+          const hasBackdrop = $body.find(selectors.loadingBackdrop).length > 0;
+          const paginationOpacity = parseFloat(
+            $body.find(selectors.pagination).css("opacity"),
+          );
+          expect(hasBackdrop || paginationOpacity < 1).to.equal(true);
+        });
+
+        // Aguarda navegação completar
         cy.url().should("include", "page=2");
         cy.get(selectors.companiesList).should("be.visible");
+
+        // Garante que novos cards carregaram antes de continuar
+        cy.get(selectors.companyCard).should("have.length.at.least", 1);
       }
     });
 
@@ -40,6 +54,9 @@ describe("Fluxo completo: Listagem → Paginação → Modal", () => {
       if (url.includes("page=2")) {
         cy.get(selectors.previousPageButton).click();
         cy.url().should("not.include", "page=");
+
+        // Apenas aguarda a navegação completar, sem verificar backdrop
+        cy.get(selectors.companiesList).should("be.visible");
       }
     });
 

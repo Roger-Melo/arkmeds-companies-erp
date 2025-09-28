@@ -50,4 +50,5 @@ export const selectors = {
   searchBarIcon: '[data-cy="searchBarIcon"]',
   pageHeading: '[data-cy="pageHeading"]',
   homepageContainer: '[data-cy="homepageContainer"]',
+  loadingBackdrop: ".MuiBackdrop-root",
 };

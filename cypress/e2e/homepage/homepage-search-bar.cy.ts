@@ -527,19 +527,32 @@ describe("SearchBar", () => {
     });
 
     it("deve ignorar espaços extras", () => {
-      cy.get(selectors.searchBarInput).find("input").type("   games   ");
+      // Primeiro, pega uma empresa que existe
+      cy.get(selectors.companyCard)
+        .first()
+        .find(selectors.nomeFantasia)
+        .invoke("text")
+        .then((nomeEmpresa) => {
+          // Pega a primeira palavra do nome
+          const primeiraPalavra = nomeEmpresa.split(" ")[0];
 
-      cy.wait(500);
+          // Limpa o campo e busca com espaços extras
+          cy.get(selectors.searchBarInput)
+            .find("input")
+            .clear()
+            .type(`   ${primeiraPalavra}   `);
 
-      // Deve encontrar normalmente (se existir)
-      cy.get("body").then(($body) => {
-        const hasGames = $body.text().toLowerCase().includes("games");
-        if (hasGames) {
+          cy.wait(500);
+
+          // Deve encontrar a empresa normalmente
           cy.get(selectors.companyCard).should("have.length.greaterThan", 0);
-        } else {
-          cy.contains("Nenhuma empresa encontrada").should("be.visible");
-        }
-      });
+
+          // Verifica que encontrou a empresa correta
+          cy.get(selectors.companyCard).should(($cards) => {
+            const cardsText = $cards.text();
+            expect(cardsText).to.include(primeiraPalavra);
+          });
+        });
     });
 
     it("deve ser case-insensitive", () => {

@@ -147,11 +147,100 @@ describe("Paginação", () => {
         // Clica para próxima página
         cy.get(selectors.nextPageButton).click();
 
-        // Durante a transição, a paginação deve ficar com opacity reduzida
-        cy.get(selectors.pagination).should(($pagination) => {
-          const opacity = parseFloat($pagination.css("opacity"));
-          // Verifica se está em estado de loading ou já carregou
-          expect(opacity).to.be.oneOf([0.6, 1]);
+        // Verifica que ALGO de loading aparece (backdrop ou opacity change)
+        cy.get("body").should(($body) => {
+          const hasBackdrop = $body.find(selectors.loadingBackdrop).length > 0;
+          const paginationOpacity = parseFloat(
+            $body.find(selectors.pagination).css("opacity"),
+          );
+
+          // Deve ter backdrop OU paginação com opacity reduzida
+          expect(hasBackdrop || paginationOpacity < 1).to.equal(true);
+        });
+
+        // Aguarda a navegação completar
+        cy.url().should("include", "page=2");
+        cy.get(selectors.companiesList).should("be.visible");
+
+        // Verifica que novos cards carregaram
+        cy.get(selectors.companyCard).should("have.length.at.least", 1);
+      }
+    });
+  });
+
+  it("deve mostrar backdrop com estilo correto durante loading", () => {
+    cy.get("body").then(($body) => {
+      if ($body.find(selectors.nextPageButton).length > 0) {
+        cy.get(selectors.nextPageButton).click();
+
+        // Verifica estilos do backdrop
+        cy.get(selectors.loadingBackdrop).should(($backdrop) => {
+          // Verifica que tem background semi-transparente
+          const bgColor = $backdrop.css("background-color");
+          expect(bgColor).to.include("rgba");
+          expect(bgColor).to.include("0.3");
+
+          // Verifica que está em posição fixed
+          expect($backdrop.css("position")).to.equal("fixed");
+        });
+
+        // Verifica o CircularProgress
+        cy.get(selectors.loadingBackdrop)
+          .find(".MuiCircularProgress-root")
+          .should(($progress) => {
+            // Verifica cor do tema
+            expect($progress.css("color")).to.equal("rgb(36, 76, 90)");
+          });
+      }
+    });
+  });
+
+  it("deve prevenir múltiplos cliques durante o loading", () => {
+    cy.get("body").then(($body) => {
+      if ($body.find(selectors.nextPageButton).length > 0) {
+        // Intercepta mudanças na URL para contar navegações
+        let navigationCount = 0;
+        cy.on("url:changed", () => {
+          navigationCount++;
+        });
+
+        // Clica na próxima página
+        cy.get(selectors.nextPageButton).click();
+
+        // Verifica que algum indicador de loading apareceu
+        cy.get("body").should(($body) => {
+          const hasBackdrop = $body.find(selectors.loadingBackdrop).length > 0;
+          const paginationDisabled = $body
+            .find(selectors.pagination)
+            .prop("disabled");
+          const paginationOpacity = parseFloat(
+            $body.find(selectors.pagination).css("opacity"),
+          );
+
+          // Deve ter algum indicador de loading
+          expect(
+            hasBackdrop || paginationDisabled || paginationOpacity < 1,
+          ).to.equal(true);
+        });
+
+        // Tenta clicar várias vezes rapidamente
+        cy.get(selectors.nextPageButton).click({ force: true });
+        cy.get(selectors.nextPageButton).click({ force: true });
+
+        // Aguarda um pouco para garantir que processou os cliques
+        cy.wait(1000);
+
+        // Verifica que navegou apenas uma vez (está na página 2, não 3 ou 4)
+        cy.url().should("include", "page=2");
+        cy.get(".Mui-selected").should("contain.text", "2");
+
+        // Garante que os cards carregaram
+        cy.get(selectors.companyCard).should("have.length.at.least", 1);
+
+        // Eventualmente o loading deve terminar
+        cy.get("body", { timeout: 10000 }).should(() => {
+          // Verifica que navegou apenas uma vez
+          expect(navigationCount).to.equal(1);
         });
       }
     });
@@ -318,6 +407,30 @@ describe("Paginação", () => {
           );
         }
       });
+    });
+  });
+
+  it("deve manter foco acessível com backdrop ativo", () => {
+    cy.get("body").then(($body) => {
+      if ($body.find(selectors.nextPageButton).length > 0) {
+        // Foca no botão de próxima página
+        cy.get(selectors.nextPageButton).focus();
+
+        // Clica para navegar
+        cy.get(selectors.nextPageButton).click();
+
+        // Verifica que o backdrop tem z-index apropriado
+        cy.get(selectors.loadingBackdrop).should(($backdrop) => {
+          const zIndex = parseInt($backdrop.css("z-index"));
+          expect(zIndex).to.be.greaterThan(1000);
+        });
+
+        // Aguarda navegação completar
+        cy.url().should("include", "page=2");
+
+        // Verifica que o foco pode ser restaurado após loading
+        cy.get(selectors.pagination).should("be.visible");
+      }
     });
   });
 });
