@@ -1,5 +1,9 @@
 # Arkmeds Companies ERP
 
+[![Unit Tests](https://github.com/Roger-Melo/arkmeds-companies-erp/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/Roger-Melo/arkmeds-companies-erp/actions/workflows/unit-tests.yml)
+
+[![E2E Tests](https://github.com/Roger-Melo/arkmeds-companies-erp/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/Roger-Melo/arkmeds-companies-erp/actions/workflows/e2e-tests.yml)
+
 Sistema de gerenciamento de empresas desenvolvido com Next.js 15, React 19 e Material-UI.
 
 🔗 **Produção**: [https://arkmeds-companies-erp.vercel.app/](https://arkmeds-companies-erp.vercel.app/)
