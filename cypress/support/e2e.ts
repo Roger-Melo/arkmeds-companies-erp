@@ -16,10 +16,32 @@
 // Import commands.js using ES2015 syntax:
 import "./commands";
 
+Cypress.on("window:before:load", (win) => {
+  // Intercepta todas as requisições
+  win.fetch = new Proxy(win.fetch, {
+    apply(target, thisArg, args) {
+      const [url, config = {}] = args;
+
+      // Adiciona o header de autenticação
+      const bypassSecret = Cypress.env("VERCEL_BYPASS");
+      if (bypassSecret) {
+        config.headers = {
+          ...config.headers,
+          "x-vercel-automation-bypass-secret": bypassSecret,
+        };
+      }
+
+      return target.apply(thisArg, [url, config]);
+    },
+  });
+});
+
+// Adiciona o header também para requisições diretas do Cypress
 beforeEach(() => {
   const bypassSecret = Cypress.env("VERCEL_BYPASS");
 
   if (bypassSecret) {
+    // Intercepta TODAS as requisições para adicionar o header
     cy.intercept("**/*", (req) => {
       req.headers["x-vercel-automation-bypass-secret"] = bypassSecret;
     });
