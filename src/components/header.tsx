@@ -1,30 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
-import logo from "@/assets/logo.svg"; // Importando o SVG
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import { Logo } from "@/components/logo";
 import type { SxProps, Theme } from "@mui/material";
-
-function Logo() {
-  return (
-    <Box sx={logoStyles.box}>
-      <Image
-        src={logo}
-        alt="Logo Arkmeds"
-        width={206}
-        height={45}
-        style={logoStyles.img}
-      />
-    </Box>
-  );
-}
-
-const logoStyles = {
-  box: { display: "flex", alignItems: "center" },
-  img: { maxWidth: "100%", height: "auto" },
-} satisfies { box: SxProps<Theme>; img: React.CSSProperties };
 
 const routes = [
   {
