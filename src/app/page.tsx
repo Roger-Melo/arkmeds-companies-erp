@@ -72,7 +72,7 @@ export default async function Home({ searchParams }: HomeProps) {
             variant="h4"
             component="h1"
             sx={{
-              color: "#244C5A",
+              color: "primary.main",
               fontWeight: 600,
               fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
               textAlign: "center",

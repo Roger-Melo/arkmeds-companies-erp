@@ -14,7 +14,7 @@ export function FormHeading({ text, cyValue, sxObj }: FormHeadingProps) {
       data-cy={cyValue}
       sx={{
         mb: 3,
-        color: "#244C5A",
+        color: "primary.main",
         fontWeight: 500,
         fontSize: { xs: "1.1rem", sm: "1.25rem" },
         ...sxObj,

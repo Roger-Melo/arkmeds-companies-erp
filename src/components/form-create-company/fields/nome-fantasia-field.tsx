@@ -58,17 +58,17 @@ export function NomeFantasiaField({
             sx={{
               "& .MuiOutlinedInput-root": {
                 "&.Mui-focused fieldset": {
-                  borderColor: "#244C5A",
+                  borderColor: "primary.main",
                 },
                 "&.Mui-error fieldset": {
                   borderColor: "#d32f2f",
                 },
               },
               "& .MuiInputLabel-root.Mui-focused": {
-                color: "#244C5A",
+                color: "primary.main",
               },
               "& .MuiFormHelperText-root": {
-                color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+                color: isLoadingCompanyInfo ? "primary.main" : undefined,
               },
             }}
           />

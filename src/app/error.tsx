@@ -19,7 +19,7 @@ export default function Error({ reset }: { reset: () => void }) {
         <Typography
           variant="h5"
           component="h2"
-          sx={{ mb: 3, color: "#244C5A", fontWeight: 600 }}
+          sx={{ mb: 3, color: "primary.main", fontWeight: 600 }}
         >
           Algo inesperado aconteceu
         </Typography>
@@ -32,7 +32,7 @@ export default function Error({ reset }: { reset: () => void }) {
           onClick={() => reset()}
           sx={{
             mt: 2,
-            backgroundColor: "#244C5A",
+            backgroundColor: "primary.main",
             "&:hover": {
               backgroundColor: "#1a3542",
             },

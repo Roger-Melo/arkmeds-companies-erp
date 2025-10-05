@@ -67,7 +67,7 @@ export function PaginationControls({
         <CircularProgress
           size={60}
           sx={{
-            color: "#244C5A",
+            color: "primary.main",
             backgroundColor: "white",
             borderRadius: "50%",
             padding: 1,
@@ -108,9 +108,9 @@ export function PaginationControls({
               height: { xs: "32px", sm: "40px" },
               margin: { xs: "0 1px", sm: "0 3px" },
               fontSize: { xs: "0.875rem", sm: "1rem" },
-              color: "#244C5A",
+              color: "primary.main",
               "&.Mui-selected": {
-                backgroundColor: "#244C5A",
+                backgroundColor: "primary.main",
                 color: "white",
                 "&:hover": {
                   backgroundColor: "#1a3540",

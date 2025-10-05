@@ -42,7 +42,7 @@ export function CompaniesList({ companies }: CompaniesListProps) {
               "&:hover": {
                 transform: "translateY(-4px)",
                 boxShadow: 2,
-                borderColor: "#244C5A",
+                borderColor: "primary.main",
               },
             }}
           >
@@ -66,7 +66,7 @@ export function CompaniesList({ companies }: CompaniesListProps) {
                 component="div"
                 sx={{
                   fontWeight: 600,
-                  color: "#244C5A",
+                  color: "primary.main",
                   mb: 1,
                   minHeight: "3.5em",
                   display: "-webkit-box",

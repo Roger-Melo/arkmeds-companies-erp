@@ -52,23 +52,23 @@ export function NumeroField({
             sx={{
               "& .MuiOutlinedInput-root": {
                 "&.Mui-focused fieldset": {
-                  borderColor: "#244C5A",
+                  borderColor: "primary.main",
                 },
                 "&.Mui-error fieldset": {
                   borderColor: "#d32f2f",
                 },
                 "&.Mui-disabled": {
                   "& fieldset": {
-                    borderColor: "#244C5A",
+                    borderColor: "primary.main",
                     opacity: 0.6,
                   },
                 },
               },
               "& .MuiInputLabel-root.Mui-focused": {
-                color: "#244C5A",
+                color: "primary.main",
               },
               "& .MuiFormHelperText-root": {
-                color: isLoadingCompanyInfo ? "#244C5A" : undefined,
+                color: isLoadingCompanyInfo ? "primary.main" : undefined,
               },
             }}
           />

@@ -35,17 +35,17 @@ export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
         data-cy="revenueDialogButton"
         size="small"
         sx={{
-          color: "#244C5A",
-          borderColor: "#244C5A",
+          color: "primary.main",
+          borderColor: "primary.main",
           fontSize: { xs: "0.75rem", sm: "0.875rem" },
           padding: { xs: "4px 8px", sm: "6px 16px" },
           textTransform: "none",
           fontWeight: 500,
           transition: "all 0.3s ease",
           "&:hover": {
-            backgroundColor: "#244C5A",
+            backgroundColor: "primary.main",
             color: "white",
-            borderColor: "#244C5A",
+            borderColor: "primary.main",
             transform: "translateY(-2px)",
             boxShadow: 1,
           },
@@ -74,10 +74,10 @@ export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
           id="alert-dialog-title"
           sx={{
             backgroundColor: "#f5f5f5",
-            color: "#244C5A",
+            color: "primary.main",
             fontWeight: 600,
             fontSize: { xs: "1.1rem", sm: "1.25rem" },
-            borderBottom: "2px solid #244C5A",
+            borderBottom: "2px solid primary.main",
           }}
         >
           {company.nome_fantasia}
@@ -92,7 +92,7 @@ export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
           }}
         >
           {currentRevenue === null ? (
-            <CircularProgress size={40} sx={{ color: "#244C5A" }} />
+            <CircularProgress size={40} sx={{ color: "primary.main" }} />
           ) : (
             <DialogContentText
               id="alert-dialog-description"
@@ -101,7 +101,7 @@ export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
                 color: "#333",
                 fontWeight: 500,
                 "& strong": {
-                  color: "#244C5A",
+                  color: "primary.main",
                   fontSize: { xs: "1.2rem", sm: "1.3rem" },
                 },
               }}
@@ -121,7 +121,7 @@ export function CurrentRevenueDialog({ company }: CurrentRevenueDialogProps) {
             onClick={handleClose}
             autoFocus
             sx={{
-              color: "#244C5A",
+              color: "primary.main",
               fontWeight: 500,
               textTransform: "none",
               "&:hover": {

@@ -20,7 +20,7 @@ export default function CreateCompanyPage() {
             data-cy="pageTitle"
             sx={{
               mb: 4,
-              color: "#244C5A",
+              color: "primary.main",
               fontWeight: 600,
               textAlign: "center",
               fontSize: { xs: "1.75rem", sm: "2rem", md: "2.125rem" },

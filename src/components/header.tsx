@@ -41,7 +41,7 @@ export function Header() {
 }
 
 const headerStyles = {
-  appBar: { backgroundColor: "#244C5A", boxShadow: 2 },
+  appBar: { backgroundColor: "primary.main", boxShadow: 2 },
   toolBar: {
     maxWidth: "lg",
     width: "100%",

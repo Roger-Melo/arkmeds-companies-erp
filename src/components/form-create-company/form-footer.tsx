@@ -53,7 +53,7 @@ export function FormFooter({
             <CircularProgress
               size={60}
               sx={{
-                color: "#244C5A",
+                color: "primary.main",
                 backgroundColor: "white",
                 borderRadius: "50%",
                 padding: 1,
@@ -88,7 +88,7 @@ export function FormFooter({
         disabled={isLoadingCompanyInfo || isSubmitting}
         data-cy="submitButton"
         sx={{
-          backgroundColor: "#244C5A",
+          backgroundColor: "primary.main",
           color: "#fff",
           px: 4,
           py: 1.5,
@@ -96,7 +96,7 @@ export function FormFooter({
             backgroundColor: "#1a3742",
           },
           "&:disabled": {
-            backgroundColor: "#244C5A",
+            backgroundColor: "primary.main",
             opacity: 0.6,
           },
         }}
