@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { formatToBRL } from "@/utils/format-to-brl";
+import { getEnvVariable } from "@/utils/get-env-variables";
 
 const currentRevenueSchema = z
   .object({ valor_rendimento: z.number() })
@@ -9,16 +10,20 @@ const currentRevenueSchema = z
     valor_rendimento: formatToBRL(data.valor_rendimento),
   }));
 
+const apiBearerToken = getEnvVariable("API_BEARER_TOKEN");
+const currentRevenueApiEndpoint = getEnvVariable(
+  "CURRENT_REVENUE_API_ENDPOINT",
+);
+
 const options = {
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
+    Authorization: `Bearer ${apiBearerToken}`,
   },
 };
 
 export async function getCurrentRevenueAction(cnpj: string) {
-  const currentRevenueApiEndpoint = `https://n8ndev.arkmeds.xyz/webhook/14686c31-d3ab-4356-9c90-9fbd2feff9f1/companies/cnpj/${cnpj}`;
-  const response = await fetch(currentRevenueApiEndpoint, options);
+  const response = await fetch(`${currentRevenueApiEndpoint}/${cnpj}`, options);
   const data = await response.json();
   const validatedData = currentRevenueSchema.safeParse(data);
 

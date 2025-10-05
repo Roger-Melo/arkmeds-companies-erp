@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { getEnvVariable } from "@/utils/get-env-variables";
 import type { CompanyFormData } from "@/types";
 
 const companyFormSchema = z.object({
@@ -16,7 +17,8 @@ const companyFormSchema = z.object({
   complemento: z.string().max(300),
 });
 
-const createCompanyApiEndpoint = `https://n8ndev.arkmeds.xyz/webhook/14686c31-d3ab-4356-9c90-9fbd2feff9f1/companies`;
+const createCompanyApiEndpoint = getEnvVariable("CREATE_COMPANY_API_ENDPOINT");
+const apiBearerToken = getEnvVariable("API_BEARER_TOKEN");
 
 export async function createCompanyAction(data: CompanyFormData) {
   const validatedFormData = companyFormSchema.safeParse(data);
@@ -34,7 +36,7 @@ export async function createCompanyAction(data: CompanyFormData) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
+        Authorization: `Bearer ${apiBearerToken}`,
       },
       body: JSON.stringify(validatedFormData.data),
     });

@@ -5,18 +5,19 @@ import { getPaginatedCompanies } from "@/utils/get-paginated-companies";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { companiesSchema } from "@/types";
 import { filterCompanies } from "@/utils/filter-companies";
+import { getEnvVariable } from "@/utils/get-env-variables";
+import { companiesSchema } from "@/types";
+
+const apiBearerToken = getEnvVariable("API_BEARER_TOKEN");
+const companiesApiEndpoint = getEnvVariable("COMPANIES_API_ENDPOINT");
 
 const options = {
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.API_BEARER_TOKEN}`,
+    Authorization: `Bearer ${apiBearerToken}`,
   },
 };
-
-const companiesApiEndpoint =
-  "https://n8ndev.arkmeds.xyz/webhook/14686c31-d3ab-4356-9c90-9fbd2feff9f1/companies/";
 
 const perPage = 10;
 

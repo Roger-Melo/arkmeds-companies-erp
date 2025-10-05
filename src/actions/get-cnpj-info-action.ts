@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { getEnvVariable } from "@/utils/get-env-variables";
 import { companySchema, type CompanyInfo } from "@/types";
 
 const CNPJSchema = z
@@ -8,7 +9,8 @@ const CNPJSchema = z
   .length(18)
   .transform((maskedCNPJ) => ({ cnpj: maskedCNPJ.replace(/\D/g, "") }));
 
-const companyInfoApiEndpoint = `https://api.arkmeds.com/cnpj`;
+const companyInfoApiEndpoint = getEnvVariable("COMPANY_INFO_API_ENDPOINT");
+const companyInfoApiToken = getEnvVariable("COMPANY_INFO_API_TOKEN");
 
 export async function getCompanyInfoAction(
   maskedCNPJ: string,
@@ -23,7 +25,7 @@ export async function getCompanyInfoAction(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": process.env.COMPANY_INFO_API_TOKEN ?? "",
+      "x-api-key": companyInfoApiToken,
     },
     body: JSON.stringify({ cnpj: validatedCNPJ.data.cnpj }),
   });
